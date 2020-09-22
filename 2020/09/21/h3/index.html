@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html>
+<meta  lang="zh-CN" >
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="theme-color" content="#fff" id="theme-color">
+  <link rel="icon" href="/img/favicon.ico">
+  <title>Muo123's Blog</title>
+  
+  
+  <meta property="og:title" content="第3周作业">
+  
+  
+  <meta property="og:url" content="http://muo123.gitee.io/2020/09/21/h3/index.html">
+  
+  
+  <meta property="og:img" content="/img/cat.png">
+  
+  
+  
+  <meta property="og:type" content="article">
+  <meta property="og:article:published_time" content="2020-09-21">
+  <meta property="og:article:modified_time" content="2020-09-22">
+  <meta property="og:article:author" content="Muo123">
+  
+  
+  
+  
+  
+  <script>
+    // control reverse button
+    var reverseDarkList = {
+      dark: 'light',
+      light: 'dark'
+    };
+    var themeColor = {
+      dark: '#1c1c1e',
+      light: '#fff'
+    }
+    // get the data of css prefers-color-scheme
+    var getCssMediaQuery = function() {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    };
+    // reverse current darkmode setting function
+    var reverseDarkModeSetting = function() {
+      var setting = localStorage.getItem('user-color-scheme');
+      if(reverseDarkList[setting]) {
+        setting = reverseDarkList[setting];
+      } else if(setting === null) {
+        setting = reverseDarkList[getCssMediaQuery()];
+      } else {
+        return;
+      }
+      localStorage.setItem('user-color-scheme', setting);
+      return setting;
+    };
+    // apply current darkmode setting
+    var setDarkmode = function(mode) {
+      var setting = mode || localStorage.getItem('user-color-scheme');
+      if(setting === getCssMediaQuery()) {
+        document.documentElement.removeAttribute('data-user-color-scheme');
+        localStorage.removeItem('user-color-scheme');
+        document.getElementById('theme-color').content = themeColor[setting];
+      } else if(reverseDarkList[setting]) {
+        document.documentElement.setAttribute('data-user-color-scheme', setting);
+        document.getElementById('theme-color').content = themeColor[setting];
+      } else {
+        document.documentElement.removeAttribute('data-user-color-scheme');
+        localStorage.removeItem('user-color-scheme');
+        document.getElementById('theme-color').content = themeColor[getCssMediaQuery()];
+      }
+    };
+    setDarkmode();
+  </script>
+  <script>
+    function loadScript(url, cb) {
+      var script = document.createElement('script');
+      script.src = url;
+      if (cb) script.onload = cb;
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  </script>
+  
+  <link rel="preload" href="//at.alicdn.com/t/font_1946621_f7g5jnuftcf.css" as="style" >
+  <link rel="preload" href="//at.alicdn.com/t/font_1952792_89b4ac4k4up.css" as="style" >
+  
+  <link rel="preload" href="//cdn.jsdelivr.net/npm/fslightbox@3.1.0/index.min.js" as="script">
+  
+  
+  <link rel="preload" href="/js/lib/lozad.min.js" as="script">
+  
+  
+  
+  
+  
+  <link rel="prefetch" href="//cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" as="script">
+  
+  
+  
+  
+  
+<link rel="stylesheet" href="/css/main.css">
+
+  
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1946621_f7g5jnuftcf.css">
+
+  
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1952792_89b4ac4k4up.css">
+
+  
+  
+  
+<meta name="generator" content="Hexo 5.1.1"></head>
+
+
+<body>
+  <div class="wrapper">
+    
+    <nav class="navbar">
+  <div class="navbar-logo">
+    <span class="navbar-logo-main">
+      
+      <img class="navbar-logo-img" src="/img/favicon.ico">
+      
+      <span class="navbar-logo-dsc">Muo123's Blog</span>
+    </span>
+  </div>
+  <div class="navbar-menu">
+    
+    <a href="/" class="navbar-menu-item">
+    
+    首页
+    
+    </a>
+    
+    <a href="/archives" class="navbar-menu-item">
+    
+    归档
+    
+    </a>
+    
+    <a href="/tags" class="navbar-menu-item">
+    
+    标签
+    
+    </a>
+    
+    <a href="/categories" class="navbar-menu-item">
+    
+    分类
+    
+    </a>
+    
+    <a href="/about" class="navbar-menu-item">
+    
+    关于
+    
+    </a>
+    
+    <a class="navbar-menu-item darknavbar" id="dark"><i class="iconfont icon-weather"></i></a>
+    <a class="navbar-menu-item searchnavbar" id="search"><i class="iconfont icon-search" style="font-size: 1.2rem; font-weight: 400;"></i></a>
+  </div>
+</nav>
+    
+    <div id="local-search" style="display: none;">
+      <input class="navbar-menu-item" id="search-input" placeholder="请输入搜索内容...">
+      <div id="search-content"></div>
+    </div>
+    
+    <div class="section-wrap">
+      <div class="container">
+        <div class="columns">
+          <main class="main-column">
+<article class="card card-content">
+  <header>
+    <h1 class="post-title">
+      第3周作业
+    </h1>
+  </header>
+  <div class="post-meta post-show-meta">
+    <time datetime="2020-09-21T14:02:30.000Z" style="display: flex; align-items: center;">
+      <i class="iconfont icon-calendar" style="margin-right: 2px;"></i>
+      <span>2020-09-21</span>
+    </time>
+    
+    <span class="dot"></span>
+    
+    <a href="/categories/homework/" class="post-meta-link">homework</a>
+    
+    
+    
+    <span class="dot"></span>
+    <span>437 字</span>
+    
+  </div>
+  
+  </header>
+  <div id="section" class="post-content">
+    <br>
+<p><img src="/2020/09/21/h3/1.png" alt srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="/2020/09/21/h3/1.png" class="lozad post-image"><br>
+<img src="/2020/09/21/h3/2.png" alt srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="/2020/09/21/h3/2.png" class="lozad post-image"></p>
+<h2 id="计算"><a class="markdownIt-Anchor" href="#计算"></a> 计算</h2>
+<hr>
+<br>
+<p>1）<font color="orange">x</font> = 0100 0011 <font color="orange">y</font> = 1111 1001 <font color="orange">z</font> = 1011 0110<br>
+2）<font color="orange">溢出</font><br>
+3）<font color="orange">x</font> = 1101 0011<br>
+4）<font color="orange">x</font> = 0111 1111 <font color="orange">y</font> = 1111 1001 <font color="orange">z溢出</font><br>
+5）<font color="orange">x</font> = 1 . 001<br>
+6）<font color="orange">x</font> = 11001 . 0<br>
+7）<font color="orange">x</font>出现精度误差</p>
+<br>
+<h2 id="概念解释"><a class="markdownIt-Anchor" href="#概念解释"></a> 概念解释</h2>
+<hr>
+<p>-<font color="orange">Method of complements</font> : In mathematics and computing, the method of complements is a technique to encode a symmetric range of positive and negative integers in a way that they can use the same algorithm (hardware) for addition throughout the whole range.<br>
+-<font color="orange">Byte</font> : The byte is a unit of digital information that most commonly consists of eight bits.<br>
+-<font color="orange">Integer (computer science)<br>
+</font> :  In computer science, an integer is a datum of integral data type, a data type that represents some range of mathematical integers.<br>
+-<font color="orange">Floating point</font> : In computing, floating-point arithmetic (FP) is arithmetic using formulaic representation of real numbers as an approximation to support a trade-off between range and precision.<br>
+<br></p>
+<h2 id="阅读method-of-cpmplements"><a class="markdownIt-Anchor" href="#阅读method-of-cpmplements"></a> 阅读“Method of cpmplements”</h2>
+<hr>
+<p><font color="orange">1) </font>假设运算使用n位二进制数，其模数为2<sup>n</sup>,数 a 为一个用n位二进制表示的常数，数 x 为一个用n位二进制表示的变数，推导如下：<br>
+a - x = 2^n % 2^n + (a - x) % 2^n<br> = (2^n + (a - x)) % 2^n<br> = (a + 2^n - x) % 2^n<br> = a % $2^n + ($2^n - x) % 2^n<br> = a + (2^n - x)<br>
+于是 x补码 = 2^n - x<br>
+一个数的全部二进制位取反则得到其反码，由此可知，如果一个数加上它的反码，则此全部二进制位是满的，也就是全部是1，其值为<br>
+x反码 + x = 2^{n-1} + 2^{n-2} + … + 2^2 + 2^1 + 2^0 = 2^n – 1<br>
+X反码 = 2^n - 1 - x<br>
+综上可得 : X补码 = X反码 + 1</p>
+<p><font color="orange">2) </font>用八进制描述变量x：x = 0361</p>
+<br>
+<h2 id="阅读twos-complement"><a class="markdownIt-Anchor" href="#阅读twos-complement"></a> 阅读“Two’s complement”</h2>
+<hr>
+<p>1）x = 0xe1 y = 0xffffffe1</p>
+<p>2）<br>
+<br></p>
+<h2 id="阅读floating-point"><a class="markdownIt-Anchor" href="#阅读floating-point"></a> 阅读“Floating point”</h2>
+<hr>
+<br>
+<p>答：<font color="orange">NaN</font>（NotaNumber，非数）是计算机科学中数值数据类型的一类值，表示未定义或不可表示的值。常在浮点数运算中使用。首次引入NaN的是1985年的IEEE 754浮点数标准。</p>
+
+  </div>
+  <div>
+  
+  <div class="post-note note-warning copyright" style="margin-top: 42px">
+    <p><span style="font-weight: bold;">作者：</span><a target="_blank" rel="nofollow noopener noreferrer" href="http://muo123.gitee.io/about">muo123</a></p>
+    <p><span style="font-weight: bold;">文章链接：</span><a target="_blank" rel="nofollow noopener noreferrer" href="http://muo123.gitee.io/2020/09/21/h3/">http://muo123.gitee.io/2020/09/21/h3/</a></p>
+    <p><span style="font-weight: bold;">版权声明：</span>本博客所有文章除特别声明外，均采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0 协议</a>。转载请注明出处！</p>
+  </div>
+  
+  </div>
+</article>
+<div class="nav">
+  
+  
+  <div class="nav-item-next">
+    <a href="/2020/09/21/h2/" class="nav-link">
+      <div>
+        <div class="nav-label">下一篇</div>
+        
+        <div class="nav-title">第2周作业 </div>
+        
+      </div>
+      <i class="iconfont icon-right nav-next-icon"></i>
+    </a>
+  </div>
+  
+</div>
+
+<div class="card card-content toc-card" id="mobiletoc">
+  <div class="toc-header"><i class="iconfont icon-menu" style="padding-right: 2px;"></i>目录</div>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97"><span class="toc-text"> 计算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E5%BF%B5%E8%A7%A3%E9%87%8A"><span class="toc-text"> 概念解释</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%85%E8%AF%BBmethod-of-cpmplements"><span class="toc-text"> 阅读“Method of cpmplements”</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%85%E8%AF%BBtwos-complement"><span class="toc-text"> 阅读“Two’s complement”</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%85%E8%AF%BBfloating-point"><span class="toc-text"> 阅读“Floating point”</span></a></li></ol>
+</div></main>
+          <aside class="left-column">
+            
+            <div class="card card-author">
+              
+<img src="/img/cat.png" class="author-img">
+
+<p class="author-name">Muo123</p>
+<p class="author-description">designed by muo123</p>
+<div class="author-message">
+  <a class="author-posts-count" href="/archives">
+    <span>6</span>
+    <span>文章</span>
+  </a>
+  <a class="author-categories-count" href="/categories">
+    <span>3</span>
+    <span>分类</span>
+  </a>
+  <a class="author-tags-count" href="/tags">
+    <span>2</span>
+    <span>标签</span>
+  </a>
+</div>
+
+            </div>
+            
+            <div class="sticky-tablet">
+  
+  
+  <article class="display-when-two-columns spacer">
+    <div class="card card-content toc-card">
+      <div class="toc-header"><i class="iconfont icon-menu" style="padding-right: 2px;"></i>目录</div>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97"><span class="toc-text"> 计算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E5%BF%B5%E8%A7%A3%E9%87%8A"><span class="toc-text"> 概念解释</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%85%E8%AF%BBmethod-of-cpmplements"><span class="toc-text"> 阅读“Method of cpmplements”</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%85%E8%AF%BBtwos-complement"><span class="toc-text"> 阅读“Two’s complement”</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%85%E8%AF%BBfloating-point"><span class="toc-text"> 阅读“Floating point”</span></a></li></ol>
+    </div>
+  </article>
+  
+  
+  <article class="card card-content categories-widget">
+    <div class="categories-card">
+  <div class="categories-header"><i class="iconfont icon-fenlei" style="padding-right: 2px;"></i>分类</div>
+  <div class="categories-list">
+    
+      <a href="/categories/Problem">
+        <div class="categories-list-item">
+          Problem
+          <span class="categories-list-item-badge">1</span>
+        </div>
+      </a>
+    
+      <a href="/categories/Hexo">
+        <div class="categories-list-item">
+          Hexo
+          <span class="categories-list-item-badge">2</span>
+        </div>
+      </a>
+    
+      <a href="/categories/homework">
+        <div class="categories-list-item">
+          homework
+          <span class="categories-list-item-badge">3</span>
+        </div>
+      </a>
+    
+  </div>
+</div>
+  </article>
+  
+  <article class="card card-content tags-widget">
+    <div class="tags-card">
+  <div class="tags-header"><i class="iconfont icon-biaoqian" style="padding-right: 2px;"></i>热门标签</div>
+  <div class="tags-list">
+    
+    <a href="\tags\Solution" title="Solution"><div class="tags-list-item">Solution</div></a>
+    
+    <a href="\tags\Tutorials" title="Tutorials"><div class="tags-list-item">Tutorials</div></a>
+    
+  </div>
+</div>
+  </article>
+  
+  
+</div>
+          </aside>
+          <aside class="right-column">
+            <div class="sticky-widescreen">
+  
+  
+  <article class="card card-content toc-card">
+    <div class="toc-header"><i class="iconfont icon-menu" style="padding-right: 2px;"></i>目录</div>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97"><span class="toc-text"> 计算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E5%BF%B5%E8%A7%A3%E9%87%8A"><span class="toc-text"> 概念解释</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%85%E8%AF%BBmethod-of-cpmplements"><span class="toc-text"> 阅读“Method of cpmplements”</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%85%E8%AF%BBtwos-complement"><span class="toc-text"> 阅读“Two’s complement”</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%98%85%E8%AF%BBfloating-point"><span class="toc-text"> 阅读“Floating point”</span></a></li></ol>
+  </article>
+  
+  
+  <article class="card card-content">
+    <div class="recent-posts-card">
+  <div class="recent-posts-header"><i class="iconfont icon-wenzhang_huaban" style="padding-right: 2px;"></i>最近文章</div>
+  <div class="recent-posts-list">
+    
+      <div class="recent-posts-item">
+        <div class="recent-posts-item-title">2020-09-21</div>
+        <a href="/2020/09/21/h3/"><div class="recent-posts-item-content">第3周作业</div></a>
+      </div>
+    
+      <div class="recent-posts-item">
+        <div class="recent-posts-item-title">2020-09-21</div>
+        <a href="/2020/09/21/h2/"><div class="recent-posts-item-content">第2周作业</div></a>
+      </div>
+    
+      <div class="recent-posts-item">
+        <div class="recent-posts-item-title">2020-09-21</div>
+        <a href="/2020/09/21/h1/"><div class="recent-posts-item-content">第1周作业</div></a>
+      </div>
+    
+      <div class="recent-posts-item">
+        <div class="recent-posts-item-title">2020-09-14</div>
+        <a href="/2020/09/14/calendar/"><div class="recent-posts-item-content">打印日历的C语言实现</div></a>
+      </div>
+    
+  </div>
+</div>
+  </article>
+  
+  
+</div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer class="footer">
+  <div class="footer-container">
+    <div>
+      <div class="footer-dsc">
+        <span>Copyright ©
+          
+          2020 -
+          
+          2020
+        </span>
+        &nbsp;
+        <a href="/" class="footer-link">Muo123's Blog </a>
+      </div>
+    </div>
+
+    
+    <div class="footer-dsc">
+      
+      Powered by
+      <a href="https://hexo.io/" class="footer-link" target="_blank" rel="nofollow noopener noreferrer">&nbsp;Hexo </a>
+      
+      
+      <span>&nbsp;|&nbsp;</span>
+      
+      
+      Theme -
+      <a href="https://github.com/theme-kaze" class="footer-link" target="_blank"
+        rel="nofollow noopener noreferrer">&nbsp;Kaze</a>
+      
+    </div>
+    
+    
+    
+    
+      <div class="footer-dsc">
+        
+        本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+        
+        <span>&nbsp;|&nbsp;</span>
+        
+        
+        本站总访客数<span id="busuanzi_value_site_uv"></span>次
+        
+      </div>
+      
+    
+</footer>
+  <a role="button" id="scrollbutton" class="basebutton" >
+  <i class="iconfont icon-arrowleft button-icon"></i>
+</a>
+<a role="button" id="menubutton" class="basebutton">
+  <i class="iconfont icon-menu button-icon"></i>
+</a>
+<a role="button" id="popbutton" class="basebutton">
+  <i class="iconfont icon-expand button-icon"></i>
+</a>
+<a role="button" id="darkbutton" class="basebutton darkwidget">
+  <i class="iconfont icon-weather button-icon"></i>
+</a>
+<a role="button" id="searchbutton" class="basebutton searchwidget">
+  <i class="iconfont icon-search button-icon"></i>
+</a>
+
+  
+  
+  
+
+  
+  
+  <script>
+  var addImgLayout = function () {
+    var img = document.querySelectorAll('.post-content img');
+    var i;
+    for (i = 0; i < img.length; i++) {
+      var wrapper = document.createElement('a');
+      wrapper.setAttribute('data-fslightbox', 'gallery');
+      wrapper.setAttribute('href', img[i].getAttribute('data-src'));
+      wrapper.style.cssText = 'width: 100%; display: flex; justify-content: center;';
+      img[i].before(wrapper);
+      wrapper.append(img[i]);
+    }
+    refreshFsLightbox();
+  }
+</script>
+<script>loadScript("//cdn.jsdelivr.net/npm/fslightbox@3.1.0/index.min.js", addImgLayout)</script>
+  
+  
+  
+<script src="/js/main.js"></script>
+
+  
+  <script>loadScript("/js/lib/busuanzi.min.js")</script>
+  
+  
+  <script>
+    var addLazyload = function () {
+      var observer = lozad('.lozad', {
+        load: function (el) {
+          el.srcset = el.getAttribute('data-src');
+        },
+        loaded: function (el) {
+          el.classList.add('loaded');
+        }
+      });
+      observer.observe();
+    }
+  </script>
+  <script>loadScript("/js/lib/lozad.min.js", addLazyload)</script>
+  
+  
+</body>
+
+</html>
