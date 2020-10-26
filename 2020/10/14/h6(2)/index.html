@@ -23,7 +23,7 @@
   
   <meta property="og:type" content="article">
   <meta property="og:article:published_time" content="2020-10-14">
-  <meta property="og:article:modified_time" content="2020-10-14">
+  <meta property="og:article:modified_time" content="2020-10-26">
   <meta property="og:article:author" content="Muo123">
   
   
@@ -200,7 +200,7 @@
     
     
     <span class="dot"></span>
-    <span>1k 字</span>
+    <span>1.3k 字</span>
     
   </div>
   
@@ -274,14 +274,17 @@ DDR3是指三代内存，1333是指默认工作频率是1333MHz</font></li>
 <li><p>Program with machine language according to the following c</p>
 <pre class="highlight"><span class="line">int_8 a = <span class="number">1</span>;</span><br><span class="line">int_8 c = a + <span class="number">3</span>;</span><br></pre>
 <ol>
-<li>Write your assembly code &amp; machine code : </li>
-<li>Explain machine code execution with the fetch-decode-execute cycle : </li>
-<li>Explain functions about IR, PC, ACC registers in a CPU : </li>
-<li>Explain physical meaning about vars a &amp; c in a machine :      </li>
+<li>Write your assembly code &amp; machine code : <pre class="highlight"><span class="line">汇编代码</span><br><span class="line">LOD #1</span><br><span class="line">STO a </span><br><span class="line">LOD a</span><br><span class="line">STO c</span><br><span class="line">LOD c</span><br><span class="line">add #3</span><br><span class="line">STO c</span><br></pre>
+<pre class="highlight"><span class="line">机器代码</span><br><span class="line">00010100 00000001</span><br><span class="line">00000101 00000000</span><br><span class="line">00000100 00000000</span><br><span class="line">00000101 00100000</span><br><span class="line">00000100 00100000</span><br><span class="line">00010000 00000011</span><br><span class="line">00000101 00100000</span><br></pre></li>
+<li><p>Explain machine code execution with the fetch-decode-execute cycle : </p>
+<pre class="highlight"><span class="line">机器周期的四个阶段通常分为两类：指令周期和执行周期。</span><br><span class="line">指令周期：</span><br><span class="line">1.提取：CPU根据PC生成存储器请求，从存储器中读取指令。</span><br><span class="line">2.解码：由指令解码器解码，将指令分解为不同的部分，以便在被CPU处理前可以容易理解它。</span><br><span class="line">执行周期：</span><br><span class="line">3.执行：处理当前获取的指令，识别指令格式所定义的操作码。</span><br><span class="line">4.存放：执行阶段计算出的结果将发送到内存或输出设备，PC更新以指向下一条指令。</span><br></pre>
+</li>
+<li><p>Explain functions about IR, PC, ACC registers in a CPU : </p>
+<pre class="highlight"><span class="line">IR（instruction register）用于暂存当前正在执行的指令</span><br><span class="line">PC（program counter）用来表示指令在主存中的地址</span><br><span class="line">ACC（accumulator）累加器，用来存放操作数或运算结果</span><br></pre></li>
+<li>Explain physical meaning about vars a &amp; c in a machine :      <pre class="highlight"><span class="line">a与c按位求与</span><br></pre></li>
 </ol>
 </li>
-<li><p>简答题</p>
-<ol>
+<li>简答题<ol>
 <li>What are stored in memory?<font color="orange">
 内存里面存储的是操作系统和正在运行的应用程序需要的指令和数据。
 </font></li>
