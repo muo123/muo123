@@ -11,13 +11,21 @@
   <title>Muo123's Blog</title>
   
   
-  <meta property="og:title" content="关于">
+  <meta property="og:title" content="Homework of PPT9">
   
   
-  <meta property="og:url" content="http://muo123.gitee.io/about/index.html">
+  <meta property="og:url" content="http://muo123.gitee.io/2020/11/03/h9/index.html">
   
   
   <meta property="og:img" content="/img/cat.png">
+  
+  
+  
+  <meta property="og:type" content="article">
+  <meta property="og:article:published_time" content="2020-11-03">
+  <meta property="og:article:modified_time" content="2020-11-03">
+  <meta property="og:article:author" content="Muo123">
+  
   
   
   
@@ -176,30 +184,70 @@
 <article class="card card-content">
   <header>
     <h1 class="post-title">
-      关于
+      Homework of PPT9
     </h1>
   </header>
   <div class="post-meta post-show-meta">
-    <time datetime="2020-09-13T16:15:31.443Z" style="display: flex; align-items: center;">
+    <time datetime="2020-11-03T10:55:02.000Z" style="display: flex; align-items: center;">
       <i class="iconfont icon-calendar" style="margin-right: 2px;"></i>
-      <span>2020-09-14</span>
+      <span>2020-11-03</span>
     </time>
+    
+    <span class="dot"></span>
+    
+    <a href="/categories/homework/" class="post-meta-link">homework</a>
+    
     
     
     <span class="dot"></span>
-    <span>0 字</span>
+    <span>560 字</span>
     
   </div>
   
   </header>
   <div id="section" class="post-content">
-    
+    <ul>
+<li>Bubble Sort the list: 33, 56, 17, 8, 95, 22。Make sure the final result is<br>from small to large.<br>Write out the list after the 2nd pass. (10 points)<br>实现程序如下图   <pre class="highlight"><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;malloc.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">list</span> &#123;</span></span><br><span class="line">	<span class="keyword">int</span> value;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">list</span> * <span class="title">next</span>;</span></span><br><span class="line">&#125;<span class="built_in">list</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">print_list</span><span class="params">(<span class="built_in">list</span> * L)</span> </span>&#123; <span class="comment">//function to print the list</span></span><br><span class="line">	<span class="built_in">list</span> * temp = L-&gt;next;</span><br><span class="line">	<span class="keyword">while</span>(temp != <span class="literal">NULL</span>) &#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;%d &quot;</span>, temp-&gt;value);</span><br><span class="line">		temp = temp-&gt;next;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">bubble_sort</span><span class="params">(<span class="built_in">list</span> * L)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span> count = <span class="number">0</span>;  <span class="comment">//count how many times bubble-sort has run</span></span><br><span class="line">	<span class="keyword">int</span> flag = <span class="number">0</span>;   <span class="comment">//determine wether bubble-sort has finished</span></span><br><span class="line">	<span class="keyword">for</span>(<span class="built_in">list</span> * t1 = L-&gt;next; t1 != <span class="literal">NULL</span>; t1 = t1-&gt;next) &#123;</span><br><span class="line">		<span class="keyword">for</span>(<span class="built_in">list</span> * t2 = L-&gt;next; t2-&gt;next != <span class="literal">NULL</span>; t2 = t2-&gt;next) &#123;</span><br><span class="line">			<span class="keyword">if</span>(t2-&gt;value &gt; t2-&gt;next-&gt;value) &#123;</span><br><span class="line">				<span class="keyword">int</span> temp = t2-&gt;value;</span><br><span class="line">				t2-&gt;value = t2-&gt;next-&gt;value;</span><br><span class="line">				t2-&gt;next-&gt;value = temp;</span><br><span class="line">				flag = <span class="number">1</span>;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span>(flag == <span class="number">0</span>) &#123;</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;the %d: &quot;</span>, ++count);</span><br><span class="line">		print_list(L);</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">		flag = <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="built_in">list</span> * L = (<span class="built_in">list</span> *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="built_in">list</span>));</span><br><span class="line">	L-&gt;next = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">list</span> * temp = L;</span><br><span class="line">	<span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">6</span>; i++) &#123;</span><br><span class="line">		<span class="keyword">int</span> value;</span><br><span class="line">		<span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, &amp;value);</span><br><span class="line">		<span class="built_in">list</span> * <span class="keyword">new</span> = (<span class="built_in">list</span> *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="built_in">list</span>));</span><br><span class="line">		<span class="keyword">new</span>-&gt;value = value;</span><br><span class="line">		<span class="keyword">new</span>-&gt;next = temp-&gt;next;</span><br><span class="line">		temp-&gt;next = <span class="keyword">new</span>;</span><br><span class="line">		temp = <span class="keyword">new</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	bubble_sort(L);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;the final result: &quot;</span>);</span><br><span class="line">	print_list(L);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//33 56 17 8 95 22</span></span><br><span class="line"></span><br></pre>
+最终测试如下图：<br><img src="https://pic.rmb.bdstatic.com/bjh/b628d1be766eca512cc9e1c477771d82.png" alt="image.png" srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="https://pic.rmb.bdstatic.com/bjh/b628d1be766eca512cc9e1c477771d82.png" class="lozad post-image"><br>于是，我们可以看出冒泡排序第二次执行后的链表为：17 8 33 22 56 95</li>
+</ul>
+<ul>
+<li><p>Give a sorted array as list={60,65,75,80,90,95}. Design an algorithm to<br>insert the value of x into the sorted array. Then test the algorithm with<br>value 50,67,99.<br>思考：为什么选择插入点在list头上、中间、尾巴上的三个数作为算<br>法测试的数据，你能解释吗？<br>算法如下</p>
+<pre class="highlight"><span class="line">取出第一个节点的值（第零个节点为head指针，里面没有内容）</span><br><span class="line">与要插入的值比较</span><br><span class="line">如果比插入值大，则在链表头执行插入操作</span><br><span class="line">否则，向后查找直到找到比插入值要大的节点，</span><br><span class="line">    若没有找到，则在链表尾执行插入操作</span><br><span class="line">    否则在该节点前一个位置执行插入操作</span><br></pre>
+<font color="orange">
+选择插入点在list头上、中间、尾巴上的三个数作为算法测试的数据，能够涵盖插入的所有情况，具有代表性
+</font>
+</li>
+<li><p>What is the state of the stack after the following sequence of Push and<br>Pop operations?   </p>
+<pre class="highlight"><span class="line">Push “anne”; Push “get”; Push “your” ; Pop; Push “my”; Push “gun”</span><br></pre>
+</li>
+</ul>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">栈底</th>
+<th style="text-align:center">—</th>
+<th style="text-align:center">—</th>
+<th style="text-align:center">栈顶</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">anne</td>
+<td style="text-align:center">get</td>
+<td style="text-align:center">my</td>
+<td style="text-align:center">gun </td>
+</tr>
+</tbody>
+</table>
+</div>
+
   </div>
   <div>
   
   <div class="post-note note-warning copyright" style="margin-top: 42px">
     <p><span style="font-weight: bold;">作者：</span><a target="_blank" rel="nofollow noopener noreferrer" href="http://muo123.gitee.io/about">muo123</a></p>
-    <p><span style="font-weight: bold;">文章链接：</span><a target="_blank" rel="nofollow noopener noreferrer" href="http://muo123.gitee.io/about/index.html">http://muo123.gitee.io/about/index.html</a></p>
+    <p><span style="font-weight: bold;">文章链接：</span><a target="_blank" rel="nofollow noopener noreferrer" href="http://muo123.gitee.io/2020/11/03/h9/">http://muo123.gitee.io/2020/11/03/h9/</a></p>
     <p><span style="font-weight: bold;">版权声明：</span>本博客所有文章除特别声明外，均采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0 协议</a>。转载请注明出处！</p>
   </div>
   
@@ -207,6 +255,18 @@
 </article>
 <div class="nav">
   
+  
+  <div class="nav-item-next">
+    <a href="/2020/11/01/h7/" class="nav-link">
+      <div>
+        <div class="nav-label">下一篇</div>
+        
+        <div class="nav-title">硬件编程——机器指令编程 </div>
+        
+      </div>
+      <i class="iconfont icon-right nav-next-icon"></i>
+    </a>
+  </div>
   
 </div>
 
@@ -264,6 +324,13 @@
             <div class="sticky-tablet">
   
   
+  <article class="display-when-two-columns spacer">
+    <div class="card card-content toc-card">
+      <div class="toc-header"><i class="iconfont icon-menu" style="padding-right: 2px;"></i>目录</div>
+
+    </div>
+  </article>
+  
   
   <article class="card card-content categories-widget">
     <div class="categories-card">
@@ -300,95 +367,25 @@
   <div class="tags-header"><i class="iconfont icon-biaoqian" style="padding-right: 2px;"></i>热门标签</div>
   <div class="tags-list">
     
-    <a href="\tags\Solution" title="Solution"><div class="tags-list-item">Solution</div></a>
-    
     <a href="\tags\Tutorials" title="Tutorials"><div class="tags-list-item">Tutorials</div></a>
     
-  </div>
-</div>
-  </article>
-  
-  
-  <article class="card card-content widescreen-archive archive-widget">
-    <div class="archive-card">
-  <div class="archive-card-header"><i class="iconfont icon-wodebaobiao" style="padding-right: 2px;"></i>归档</div>
-  <div class="archive-card-list">
-    
-    
-    
-      
-        
-        
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-    
-      <a href="/archives/2020" class="archive-card-list-item">
-          2020
-          <span class="archive-card-list-item-badge">14</span>
-      </a>
+    <a href="\tags\Solution" title="Solution"><div class="tags-list-item">Solution</div></a>
     
   </div>
 </div>
   </article>
+  
   
 </div>
           </aside>
           <aside class="right-column">
             <div class="sticky-widescreen">
   
+  
+  <article class="card card-content toc-card">
+    <div class="toc-header"><i class="iconfont icon-menu" style="padding-right: 2px;"></i>目录</div>
+
+  </article>
   
   
   <article class="card card-content">
@@ -420,81 +417,6 @@
 </div>
   </article>
   
-  
-  <article class="card card-content">
-    <div class="archive-card">
-  <div class="archive-card-header"><i class="iconfont icon-wodebaobiao" style="padding-right: 2px;"></i>归档</div>
-  <div class="archive-card-list">
-    
-    
-    
-      
-        
-        
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-    
-      <a href="/archives/2020" class="archive-card-list-item">
-          2020
-          <span class="archive-card-list-item-badge">14</span>
-      </a>
-    
-  </div>
-</div>
-  </article>
   
 </div>
           </aside>
