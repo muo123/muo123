@@ -103,6 +103,9 @@
   
   
   
+  <link rel="prefetch" href="//unpkg.com/valine/dist/Valine.min.js" as="script">
+  
+  
   
   
 <link rel="stylesheet" href="/css/main.css">
@@ -293,6 +296,42 @@
   </div>
   
   
+</div>
+
+<div class="card card-content comment-card" style="margin-top: 16px;">
+  <div class="comment-card-title">评论</div>
+  
+  <div id="vcomments"></div>
+  
+  <script>
+    loadScript("//unpkg.com/valine/dist/Valine.min.js");
+    var oldLoadVa = window.onload;
+    window.onload = function () {
+      oldLoadVa && oldLoadVa();
+      new Valine({
+        el: '#vcomments',
+        appId: 'W5D2PsOTlwFzBQVD8LcVi2HH-gzGzoHsz',
+        appKey: 'CV4r2ngI9G9qIYz94DJLpb1s',
+        placeholder: '欢迎评论',
+        path: window.location.pathname,
+        avatar: 'mp',
+        meta: ["nick","mail","link"],
+        pageSize: '10',
+        lang: '',
+        visitor: 'false',
+        highlight: true,
+        recordIP: false,
+        
+        serverURLs: 'https://muo123.cn',
+        
+        
+        
+        enableQQ: 'false',
+        requiredFields: [],
+      });
+    };
+  </script>
+
 </div>
 
 <div class="card card-content toc-card" id="mobiletoc">
