@@ -11,21 +11,13 @@
   <title>Muo123's Blog</title>
   
   
-  <meta property="og:title" content="Python交互式编程">
+  <meta property="og:title" content="Muo123&#39;s Blog">
   
   
-  <meta property="og:url" content="http://muo123.gitee.io/2020/11/22/py/index.html">
+  <meta property="og:url" content="http://muo123.gitee.io/archives/2021/01/index.html">
   
   
   <meta property="og:img" content="/img/cat.png">
-  
-  
-  
-  <meta property="og:type" content="article">
-  <meta property="og:article:published_time" content="2020-11-22">
-  <meta property="og:article:modified_time" content="2020-12-14">
-  <meta property="og:article:author" content="Muo123">
-  
   
   
   
@@ -194,152 +186,28 @@
     <div class="section-wrap">
       <div class="container">
         <div class="columns">
-          <main class="main-column">
-<article class="card card-content">
-  <header>
-    <h1 class="post-title">
-      Python交互式编程
-    </h1>
-  </header>
-  <div class="post-meta post-show-meta">
-    <time datetime="2020-11-22T02:20:32.000Z" style="display: flex; align-items: center;">
-      <i class="iconfont icon-calendar" style="margin-right: 2px;"></i>
-      <span>2020-11-22</span>
-    </time>
-    
-    <span class="dot"></span>
-    
-    <a href="/categories/homework/" class="post-meta-link">homework</a>
-    
-    
-    
-    <span class="dot"></span>
-    <span>403 字</span>
-    
-  </div>
+          <main class="main-column"><div class="card card-content">
+  <h1 class="widget-title">归档</h1>
+</div>
+<div class="archive-timeline">
   
-  </header>
-  <div id="section" class="post-content">
-    <h1 id="用python做计算器做数学题"><a href="#用python做计算器做数学题" class="headerlink" title="用python做计算器做数学题"></a>用python做计算器做数学题</h1><h2 id="实验目的"><a href="#实验目的" class="headerlink" title="实验目的"></a>实验目的</h2><ol>
-<li>了解一种“解释型”语言python</li>
-<li>使用python做一些简单的科学计算</li>
-</ol>
-<h2 id="实验环境"><a href="#实验环境" class="headerlink" title="实验环境"></a>实验环境</h2><ul>
-<li>编程工具：python Anaconda</li>
-<li>操作系统：Windows10 </li>
-</ul>
-<h2 id="实验内容"><a href="#实验内容" class="headerlink" title="实验内容"></a>实验内容</h2><p>使用python求解</p>
-<ol>
-<li>选择2个高等数学上的作业，如泰勒分解、公式化简、解方程等</li>
-<li>选择2个线性代数上的作业，如求dot、逆矩阵等</li>
-</ol>
-<h2 id="实验设计"><a href="#实验设计" class="headerlink" title="实验设计"></a>实验设计</h2><ol>
-<li><p>使用python求解高等数学题目</p>
-<ol>
-<li><p>求不定积分：$\int{x^3lnx}\,{\rm d}x$</p>
-<pre class="highlight"><span class="line">(D:\Anaconda3-5.2) C:\Users\lenovo&gt;python</span><br><span class="line">&gt;&gt;&gt; from sympy import*</span><br><span class="line">&gt;&gt;&gt; x &#x3D; symbols(&#39;x&#39;);</span><br><span class="line">&gt;&gt;&gt; integrate(x**3*ln(x))</span><br><span class="line">x**4*log(x)&#x2F;4 - x**4&#x2F;16</span><br></pre>
-</li>
-<li><p>写出函数在x=0的泰勒公式至所指的阶数：$ln\,cos\,x, (x^6)$</p>
-<pre class="highlight"><span class="line">(D:\Anaconda3-5.2) C:\Users\lenovo&gt;python</span><br><span class="line">&gt;&gt;&gt; from sympy import*</span><br><span class="line">&gt;&gt;&gt; x &#x3D; symbols(&#39;x&#39;);</span><br><span class="line">&gt;&gt;&gt; (ln(cos(x))).series(x,0,8)</span><br><span class="line">-x**2&#x2F;2 - x**4&#x2F;12 - x**6&#x2F;45 + O(x**7)</span><br></pre>
-</li>
-</ol>
-</li>
-<li><p>使用python求解线性代数题目</p>
-<ol>
-<li>计算矩阵的乘积<br><img src="https://pic.rmb.bdstatic.com/bjh/9940eb0185104bc8f258cddb2ecf7d44.png" alt="image.png" title="image.png" srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="https://pic.rmb.bdstatic.com/bjh/9940eb0185104bc8f258cddb2ecf7d44.png" class="lozad post-image"><pre class="highlight"><span class="line">(D:\Anaconda3-5.2) C:\Users\lenovo&gt;python</span><br><span class="line">&gt;&gt;&gt; from numpy import*</span><br><span class="line">&gt;&gt;&gt; a &#x3D; matrix([[1,2],[3,4]])</span><br><span class="line">&gt;&gt;&gt; b &#x3D; matrix([[11,12],[13,14]])</span><br><span class="line">&gt;&gt;&gt; a.dot(b)</span><br><span class="line">matrix([[37, 40],</span><br><span class="line">    [85, 92]])</span><br></pre>
-<ol>
-<li>求矩阵A的逆矩阵<br><img src="https://pic.rmb.bdstatic.com/bjh/dafe17a7c0dd0347858e591bb1827813.png" alt="image.png" title="image.png" srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="https://pic.rmb.bdstatic.com/bjh/dafe17a7c0dd0347858e591bb1827813.png" class="lozad post-image"><pre class="highlight"><span class="line">(D:\Anaconda3-5.2) C:\Users\lenovo&gt;python</span><br><span class="line"> &gt;&gt;&gt; from numpy import*</span><br><span class="line"> &gt;&gt;&gt; c &#x3D; matrix([[1,1,1],[0,2,5],[2,5,-1]])</span><br><span class="line"> &gt;&gt;&gt; linalg.inv(c)</span><br><span class="line"> matrix([[ 1.28571429, -0.28571429, -0.14285714],</span><br><span class="line">     [-0.47619048,  0.14285714,  0.23809524],</span><br><span class="line">     [ 0.19047619,  0.14285714, -0.0952381 ]])</span><br></pre>
-</li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-<h2 id="实验感想"><a href="#实验感想" class="headerlink" title="实验感想"></a>实验感想</h2><ol>
-<li>对解释型语言有了进一步的了解</li>
-<li>初步掌握使用python求解数学问题</li>
-</ol>
-
-  </div>
-  <div>
   
-  <div class="post-note note-warning copyright" style="margin-top: 42px">
-    <p><span style="font-weight: bold;">作者：</span><a target="_blank" rel="nofollow noopener noreferrer" href="http://muo123.gitee.io/about">muo123</a></p>
-    <p><span style="font-weight: bold;">文章链接：</span><a target="_blank" rel="nofollow noopener noreferrer" href="http://muo123.gitee.io/2020/11/22/py/">http://muo123.gitee.io/2020/11/22/py/</a></p>
-    <p><span style="font-weight: bold;">版权声明：</span>本博客所有文章除特别声明外，均采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0 协议</a>。转载请注明出处！</p>
-  </div>
   
-  </div>
-</article>
-<div class="nav">
+  <div class="archive-timeline-tag"><span>2021</span></div>
   
-  <div class="nav-item-prev">
-    <a href="/2020/11/22/h9-1/" class="nav-link">
-      <i class="iconfont icon-left nav-prev-icon"></i>
-      <div>
-        <div class="nav-label">上一篇</div>
-        
-        <div class="nav-title">大数据技术下新媒体用户画像与隐私安全 </div>
-        
+  
+  <div class="archive-timeline-item">
+    <div class="archive-timeline-post">
+      <div class="card card-content">
+        <div class="archive-timeline-post-date">2021-01-06</div>
+        <div class="archive-timeline-post-content"><a href="/2021/01/06/h11/"
+            class="archive-timeline-post-item">互联网时代的热点领域与营销方法</a></div>
       </div>
-    </a>
-  </div>
-  
-  
-  <div class="nav-item-next">
-    <a href="/2020/11/03/h9/" class="nav-link">
-      <div>
-        <div class="nav-label">下一篇</div>
-        
-        <div class="nav-title">Homework of PPT9 </div>
-        
-      </div>
-      <i class="iconfont icon-right nav-next-icon"></i>
-    </a>
+    </div>
   </div>
   
 </div>
-
-<div class="card card-content comment-card" style="margin-top: 16px;">
-  <div class="comment-card-title">评论</div>
-  
-  <div id="vcomments"></div>
-  
-  <script>
-    loadScript("//unpkg.com/valine/dist/Valine.min.js");
-    var oldLoadVa = window.onload;
-    window.onload = function () {
-      oldLoadVa && oldLoadVa();
-      new Valine({
-        el: '#vcomments',
-        appId: 'W5D2PsOTlwFzBQVD8LcVi2HH-gzGzoHsz',
-        appKey: 'CV4r2ngI9G9qIYz94DJLpb1s',
-        placeholder: '欢迎评论',
-        path: window.location.pathname,
-        avatar: 'mp',
-        meta: ["nick","mail","link"],
-        pageSize: '10',
-        lang: '',
-        visitor: 'false',
-        highlight: true,
-        recordIP: false,
-        
-        serverURLs: 'https://muo123.cn',
-        
-        
-        
-        enableQQ: 'false',
-        requiredFields: [],
-      });
-    };
-  </script>
-
-</div>
-
-<div class="card card-content toc-card" id="mobiletoc">
-  <div class="toc-header"><i class="iconfont icon-menu" style="padding-right: 2px;"></i>目录</div>
-<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%94%A8python%E5%81%9A%E8%AE%A1%E7%AE%97%E5%99%A8%E5%81%9A%E6%95%B0%E5%AD%A6%E9%A2%98"><span class="toc-text">用python做计算器做数学题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%9B%AE%E7%9A%84"><span class="toc-text">实验目的</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83"><span class="toc-text">实验环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%86%85%E5%AE%B9"><span class="toc-text">实验内容</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E8%AE%BE%E8%AE%A1"><span class="toc-text">实验设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E6%84%9F%E6%83%B3"><span class="toc-text">实验感想</span></a></li></ol></li></ol>
-</div></main>
+</main>
           <aside class="left-column">
             
             <div class="card card-author">
@@ -390,13 +258,6 @@
             <div class="sticky-tablet">
   
   
-  <article class="display-when-two-columns spacer">
-    <div class="card card-content toc-card">
-      <div class="toc-header"><i class="iconfont icon-menu" style="padding-right: 2px;"></i>目录</div>
-<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%94%A8python%E5%81%9A%E8%AE%A1%E7%AE%97%E5%99%A8%E5%81%9A%E6%95%B0%E5%AD%A6%E9%A2%98"><span class="toc-text">用python做计算器做数学题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%9B%AE%E7%9A%84"><span class="toc-text">实验目的</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83"><span class="toc-text">实验环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%86%85%E5%AE%B9"><span class="toc-text">实验内容</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E8%AE%BE%E8%AE%A1"><span class="toc-text">实验设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E6%84%9F%E6%83%B3"><span class="toc-text">实验感想</span></a></li></ol></li></ol>
-    </div>
-  </article>
-  
   
   <article class="card card-content categories-widget">
     <div class="categories-card">
@@ -435,16 +296,113 @@
   </article>
   
   
+  <article class="card card-content widescreen-archive archive-widget">
+    <div class="archive-card">
+  <div class="archive-card-header"><i class="iconfont icon-wodebaobiao" style="padding-right: 2px;"></i>归档</div>
+  <div class="archive-card-list">
+    
+    
+    
+      
+        
+        
+        
+      
+    
+      
+        
+          <a href="/archives/2021" class="archive-card-list-item">
+              2021
+              <span class="archive-card-list-item-badge">1</span>
+          </a>
+        
+        
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+    
+      <a href="/archives/2020" class="archive-card-list-item">
+          2020
+          <span class="archive-card-list-item-badge">18</span>
+      </a>
+    
+  </div>
+</div>
+  </article>
+  
 </div>
           </aside>
           <aside class="right-column">
             <div class="sticky-widescreen">
   
-  
-  <article class="card card-content toc-card">
-    <div class="toc-header"><i class="iconfont icon-menu" style="padding-right: 2px;"></i>目录</div>
-<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%94%A8python%E5%81%9A%E8%AE%A1%E7%AE%97%E5%99%A8%E5%81%9A%E6%95%B0%E5%AD%A6%E9%A2%98"><span class="toc-text">用python做计算器做数学题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%9B%AE%E7%9A%84"><span class="toc-text">实验目的</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83"><span class="toc-text">实验环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%86%85%E5%AE%B9"><span class="toc-text">实验内容</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E8%AE%BE%E8%AE%A1"><span class="toc-text">实验设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E6%84%9F%E6%83%B3"><span class="toc-text">实验感想</span></a></li></ol></li></ol>
-  </article>
   
   
   <article class="card card-content">
@@ -476,6 +434,108 @@
 </div>
   </article>
   
+  
+  <article class="card card-content">
+    <div class="archive-card">
+  <div class="archive-card-header"><i class="iconfont icon-wodebaobiao" style="padding-right: 2px;"></i>归档</div>
+  <div class="archive-card-list">
+    
+    
+    
+      
+        
+        
+        
+      
+    
+      
+        
+          <a href="/archives/2021" class="archive-card-list-item">
+              2021
+              <span class="archive-card-list-item-badge">1</span>
+          </a>
+        
+        
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+      
+        
+      
+    
+    
+      <a href="/archives/2020" class="archive-card-list-item">
+          2020
+          <span class="archive-card-list-item-badge">18</span>
+      </a>
+    
+  </div>
+</div>
+  </article>
   
 </div>
           </aside>
@@ -550,20 +610,6 @@
 
   
   
-  
-
-  
-  
-    <script>
-      MathJax = {
-        tex: {
-          inlineMath: [['$', '$'], ['\\(', '\\)']]
-        }
-      };
-    </script>
-    
-<script src="//cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-svg.js"></script>
-
   
 
   
