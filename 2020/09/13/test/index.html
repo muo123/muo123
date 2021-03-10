@@ -23,11 +23,9 @@
   
   <meta property="og:type" content="article">
   <meta property="og:article:published_time" content="2020-09-13">
-  <meta property="og:article:modified_time" content="2020-12-14">
+  <meta property="og:article:modified_time" content="2021-03-10">
   <meta property="og:article:author" content="Muo123">
   
-  
-  <meta property="og:article:tag" content="Tutorials">
   
   
   
@@ -220,16 +218,6 @@
     
   </div>
   
-  <div class="post-meta post-show-meta" style="margin-top: -10px;">
-    <div style="display: flex; align-items: center;">
-      <i class="iconfont icon-biaoqian" style="margin-right: 2px; font-size: 1.15rem;"></i>
-      
-      
-        <a href="/tags/Tutorials/" class="post-meta-link">Tutorials</a>
-      
-    </div>
-  </div>
-  
   </header>
   <div id="section" class="post-content">
     <h1 id="Hexo-Gitee博客搭建详细教程"><a href="#Hexo-Gitee博客搭建详细教程" class="headerlink" title="Hexo+Gitee博客搭建详细教程"></a>Hexo+Gitee博客搭建详细教程</h1><p><a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>是一个快速、简洁且高效的博客框架。Hexo使用<a target="_blank" rel="noopener" href="https://daringfireball.net/projects/markdown/">Markdown</a>(或其他渲染引擎)解析文章，在几秒内，即可利用靓丽的主题生成静态网页。（节选自Hexo）</p>
@@ -249,25 +237,29 @@
 <p><br><br><br></p>
 <h2 id="二、Hexo的安装"><a href="#二、Hexo的安装" class="headerlink" title="二、Hexo的安装"></a>二、Hexo的安装</h2><p><br></p>
 <p>在D盘（之前所选择的安装目录下）右键Git Bash Here使用如下指令安装Hexo架构</p>
-<pre class="highlight"><span class="line">$ npm install hexo-cli -g</span><br></pre>
-<p>或指定全局安装<br><pre class="highlight"><span class="line">$ npm install -g hexo</span><br></pre><br>等待Hexo架构完成（大概几分钟）</p>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">npm</span> <span class="token function">install</span> hexo-cli -g<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>或指定全局安装<br><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">npm</span> <span class="token function">install</span> -g hexo<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><br>等待Hexo架构完成（大概几分钟）</p>
 <p>我们在Windows10平台使用Gitee+Hexo搭建博客前，需要先在本地建立一个用来存储个人博客的目录，例如可以选择在D盘新建文件夹blog。</p>
-<p><img src="/2020/09/13/test/2.jpg" alt srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="/2020/09/13/test/2.jpg" class="lozad post-image"></p>
-<p>创建文件夹后，只需在blog目录下单击右键启动Git Bash Here,输入如下命令完成博客的初始化<br><pre class="highlight"><span class="line">$ hexo init</span><br></pre><br>之后依次使用如下指令（依旧在上述端口中）<br><pre class="highlight"><span class="line">$ hexo clean</span><br><span class="line">$ hexo generator <span class="comment">#或者 hexo g</span></span><br><span class="line">$ hexo server <span class="comment">#或者 hexo s</span></span><br></pre><br>然后就可以打开本地浏览器搜索<a href="http://localhost:4000，查看你的博客了。到此，博客算是完成了初步构建。">http://localhost:4000，查看你的博客了。到此，博客算是完成了初步构建。</a></p>
+<p><img src="test/2.jpg" alt="" srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="test/2.jpg" class="lozad post-image"></p>
+<p>创建文件夹后，只需在blog目录下单击右键启动Git Bash Here,输入如下命令完成博客的初始化<br><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo init<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><br>之后依次使用如下指令（依旧在上述端口中）<br><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo clean
+$ hexo generator <span class="token comment">#或者 hexo g</span>
+$ hexo server <span class="token comment">#或者 hexo s</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre><br>然后就可以打开本地浏览器搜索<a href="http://localhost:4000，查看你的博客了。到此，博客算是完成了初步构建。">http://localhost:4000，查看你的博客了。到此，博客算是完成了初步构建。</a></p>
 <p><br><br><br></p>
 <h2 id="三、-博客主题的下载和更换（选择性浏览）"><a href="#三、-博客主题的下载和更换（选择性浏览）" class="headerlink" title="三、*博客主题的下载和更换（选择性浏览）"></a>三、*博客主题的下载和更换（选择性浏览）</h2><p><br></p>
 <p>Hexo默认的主题是landscape，如果你想更换主题可以尝试在Hexo主题界面下载<a target="_blank" rel="noopener" href="https://hexo.io/themes/">themes</a></p>
 <p><br></p>
 <h3 id="具体操作流程如下"><a href="#具体操作流程如下" class="headerlink" title="具体操作流程如下"></a>具体操作流程如下</h3><p><br></p>
-<p>搜索主题 -&gt; 点击主题（有的主题可能无法加载） -&gt; 复制网站链接 -&gt;<br>在blog文件目录下找到theme文件夹 -&gt; 进入文件夹后右键打开Git Bash Here，输入如下指令<br><pre class="highlight"><span class="line">$ git <span class="built_in">clone</span> (将网站链接粘贴到此处)</span><br></pre><br>然后等待一段时间，你所心仪的主题便下好了。之后只需在blog目录下找到_config.yml文件，即网站配置文件。用vs code打开网站配置文件，找到theme一栏</p>
-<p><img src="/2020/09/13/test/3.png" alt srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="/2020/09/13/test/3.png" class="lozad post-image">  </p>
+<p>搜索主题 -&gt; 点击主题（有的主题可能无法加载） -&gt; 复制网站链接 -&gt;<br>在blog文件目录下找到theme文件夹 -&gt; 进入文件夹后右键打开Git Bash Here，输入如下指令<br><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">git</span> clone <span class="token punctuation">(</span>将网站链接粘贴到此处<span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><br>然后等待一段时间，你所心仪的主题便下好了。之后只需在blog目录下找到_config.yml文件，即网站配置文件。用vs code打开网站配置文件，找到theme一栏</p>
+<p><img src="test/3.png" alt="" srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="test/3.png" class="lozad post-image">  </p>
 <p>将theme一栏改为你所下载的主题文件名即可。（此处我下载的是<a target="_blank" rel="noopener" href="https://demo.theme-kaze.top/">hexo-theme-Kaze</a>主题，点击后可以查看kaze主题的相关安装及配置）</p>
 <p><br><br><br></p>
 <h2 id="四、Gitee的部署"><a href="#四、Gitee的部署" class="headerlink" title="四、Gitee的部署"></a>四、Gitee的部署</h2><p>首先你需要注册<a target="_blank" rel="noopener" href="https://gitee.com">Gitee</a>的账号，接下来只需要新建独属于你的仓库，如图  </p>
-<p><img src="/2020/09/13/test/4.jpg" alt srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="/2020/09/13/test/4.jpg" class="lozad post-image"><br>新建仓库名为: (你的昵称)<br>例如：muo123<br>然后选择语言为HTML，仓库属性为共有public，其余可以不用管，之后点击创建，你就拥有了属于你自己的个性仓库了！    </p>
-<p>之后我们需要做的就是把本地的博客部署到Gitee上。首先，我们需要打开网站配置文件<br><img src="/2020/09/13/test/5.png" alt srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="/2020/09/13/test/5.png" class="lozad post-image"><br>对这几项进行修改，我的配置如下<br><img src="/2020/09/13/test/9.png" alt srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="/2020/09/13/test/9.png" class="lozad post-image"><br>repo为你的仓库名，可以在你的Gitee仓库处复制过来<br><img src="/2020/09/13/test/7.png" alt srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="/2020/09/13/test/7.png" class="lozad post-image">   </p>
-<p>完成这些布置后，只需在blog目录下右键Git Bash输入指令下载插件<br><pre class="highlight"><span class="line">$ npm install hexo-deployer-git --save</span><br></pre><br>然后Gitee部署三连<br><pre class="highlight"><span class="line">$ hexo clean</span><br><span class="line">$ hexo g</span><br><span class="line">$ hexo d</span><br></pre><br>然后你就会发现你的仓库中出现了blog的目录，</p>
-<p><img src="/2020/09/13/test/8.png" alt srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="/2020/09/13/test/8.png" class="lozad post-image"></p>
+<p><img src="test/4.jpg" alt="" srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="test/4.jpg" class="lozad post-image"><br>新建仓库名为: (你的昵称)<br>例如：muo123<br>然后选择语言为HTML，仓库属性为共有public，其余可以不用管，之后点击创建，你就拥有了属于你自己的个性仓库了！    </p>
+<p>之后我们需要做的就是把本地的博客部署到Gitee上。首先，我们需要打开网站配置文件<br><img src="test/5.png" alt="" srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="test/5.png" class="lozad post-image"><br>对这几项进行修改，我的配置如下<br><img src="test/9.png" alt="" srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="test/9.png" class="lozad post-image"><br>repo为你的仓库名，可以在你的Gitee仓库处复制过来<br><img src="test/7.png" alt="" srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="test/7.png" class="lozad post-image">   </p>
+<p>完成这些布置后，只需在blog目录下右键Git Bash输入指令下载插件<br><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ <span class="token function">npm</span> <span class="token function">install</span> hexo-deployer-git --save<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><br>然后Gitee部署三连<br><pre class="line-numbers language-none"><code class="language-none">$ hexo clean
+$ hexo g
+$ hexo d<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre><br>然后你就会发现你的仓库中出现了blog的目录，</p>
+<p><img src="test/8.png" alt="" srcset="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20300%20300'%3E%3C/svg%3E" data-src="test/8.png" class="lozad post-image"></p>
 <p>接下来点击service（服务），便可以找到Gitee Pages，点击创建就可以看见你梦寐以求的博客啦。</p>
 
   </div>
@@ -356,7 +348,7 @@
     <span>分类</span>
   </a>
   <a class="author-tags-count" href="/tags">
-    <span>2</span>
+    <span>0</span>
     <span>标签</span>
   </a>
 </div>
@@ -423,10 +415,6 @@
     <div class="tags-card">
   <div class="tags-header"><i class="iconfont icon-biaoqian" style="padding-right: 2px;"></i>热门标签</div>
   <div class="tags-list">
-    
-    <a href="\tags\Tutorials" title="Tutorials"><div class="tags-list-item">Tutorials</div></a>
-    
-    <a href="\tags\Solution" title="Solution"><div class="tags-list-item">Solution</div></a>
     
   </div>
 </div>

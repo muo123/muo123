@@ -23,11 +23,9 @@
   
   <meta property="og:type" content="article">
   <meta property="og:article:published_time" content="2020-09-13">
-  <meta property="og:article:modified_time" content="2020-12-14">
+  <meta property="og:article:modified_time" content="2021-03-10">
   <meta property="og:article:author" content="Muo123">
   
-  
-  <meta property="og:article:tag" content="Solution">
   
   
   
@@ -220,54 +218,44 @@
     
   </div>
   
-  <div class="post-meta post-show-meta" style="margin-top: -10px;">
-    <div style="display: flex; align-items: center;">
-      <i class="iconfont icon-biaoqian" style="margin-right: 2px; font-size: 1.15rem;"></i>
-      
-      
-        <a href="/tags/Solution/" class="post-meta-link">Solution</a>
-      
-    </div>
-  </div>
-  
   </header>
   <div id="section" class="post-content">
     <h1 id="关于Hexo-Gitee博客搭建时遇到的一些问题以及解决方案"><a href="#关于Hexo-Gitee博客搭建时遇到的一些问题以及解决方案" class="headerlink" title="关于Hexo+Gitee博客搭建时遇到的一些问题以及解决方案"></a>关于Hexo+Gitee博客搭建时遇到的一些问题以及解决方案</h1><p><br></p>
-<font color="00BFFF">
+<font color = 00BFFF>
 
 ## localhost重定向次数过多
 
 </font>
 <br>
 
-对于这个问题，搜过很多方案，例如<font color="red">删除cookies，卸载浏览器重装，删除博客所有内容等，</font>结果都以失败告终。 
+对于这个问题，搜过很多方案，例如<font color = red>删除cookies，卸载浏览器重装，删除博客所有内容等，</font>结果都以失败告终。 
 
 
-出现这样的情况，可能是因为我每次建博客失败，删除文档重来时，一直使用的新建文件夹名称都是hexo，使用<font color="red">hexo s</font>指令生成静态页面时，使得本地访问出现地址循环定向之类的问题（这只是我个人浅陋的想法，我对网页重定向也没有很深入的了解）。     
+出现这样的情况，可能是因为我每次建博客失败，删除文档重来时，一直使用的新建文件夹名称都是hexo，使用<font color = red>hexo s</font>指令生成静态页面时，使得本地访问出现地址循环定向之类的问题（这只是我个人浅陋的想法，我对网页重定向也没有很深入的了解）。     
 
 
-我最后解决这个问题的方案是删除hexo文档，之后新建文档命名为blog，在blog目录下重新建立博客，再用<font color="red">hexo s</font>指令生成网页，发现最后没有出现重定向次数过多的问题。    
+我最后解决这个问题的方案是删除hexo文档，之后新建文档命名为blog，在blog目录下重新建立博客，再用<font color = red>hexo s</font>指令生成网页，发现最后没有出现重定向次数过多的问题。    
 
-<font color="87CEEB">（ps：虽然删档重来的确很难受，我此前已经删档重来了不下十次，所以，这个解决方案对我来说还可以接受）</font>
+<font color = 87CEEB>（ps：虽然删档重来的确很难受，我此前已经删档重来了不下十次，所以，这个解决方案对我来说还可以接受）</font>
 
 <p><br><br><br></p>
-<font color="00BFFF">
+<font color = 00BFFF>
 
 ## Gitee Pages部署失败（主题没有样式或使用hexo d指令无法推送博客内容）
 
 </font>
 <br>
 
-主题没有样式的问题，大概是本地生成网页正常，部署到Gitee Pages上后主题消失，页面回到十年前，简直降维打击的感觉。这个我也搜过许多解决方案，例如<font color="red">改变网站配置文件root的路径，将它改为“root: .”（这是指在当前目录搜索，没有样式的原因可能是网站搜索不到相关文件，打开网站检查可以看见一堆404）。</font>不过，之后我发现，不用更改root也可以直接访问页面。当初样式消失的问题可能是当初我不小心修改了某些文件，如果按照教程来做的话，应该不会碰到相关问题。   
+主题没有样式的问题，大概是本地生成网页正常，部署到Gitee Pages上后主题消失，页面回到十年前，简直降维打击的感觉。这个我也搜过许多解决方案，例如<font color = red>改变网站配置文件root的路径，将它改为“root: .”（这是指在当前目录搜索，没有样式的原因可能是网站搜索不到相关文件，打开网站检查可以看见一堆404）。</font>不过，之后我发现，不用更改root也可以直接访问页面。当初样式消失的问题可能是当初我不小心修改了某些文件，如果按照教程来做的话，应该不会碰到相关问题。   
 
 
 
-无法推送博客的问题，比较难解释，我之前部署了公钥，总出现问题，后来我直接删除了公钥，结果还是存在问题。大概可以排除公钥的因素，不过，如果你想对仓库进行写入操作，<font color="red">公钥必须是个人公钥才行，否则部署时也会部署不上去。</font>之后，我们来谈谈我是如何解决最终问题的。      
+无法推送博客的问题，比较难解释，我之前部署了公钥，总出现问题，后来我直接删除了公钥，结果还是存在问题。大概可以排除公钥的因素，不过，如果你想对仓库进行写入操作，<font color = red>公钥必须是个人公钥才行，否则部署时也会部署不上去。</font>之后，我们来谈谈我是如何解决最终问题的。      
 
 
-<font color="red">最后我发现，问题出现在仓库名称上--xxx.gitee.io。</font>这样命名的仓库名称是万恶的来源，具体原因和解决方案可以在[Gitee Page](https://gitee.com/help/articles/4136#article-header0)原网页找到。具体是pages的二级目录的问题，只要把仓库名的后缀删去即可，这样就没有了相应配置文件的相对路径问题。     
+<font color = red>最后我发现，问题出现在仓库名称上--xxx.gitee.io。</font>这样命名的仓库名称是万恶的来源，具体原因和解决方案可以在[Gitee Page](https://gitee.com/help/articles/4136#article-header0)原网页找到。具体是pages的二级目录的问题，只要把仓库名的后缀删去即可，这样就没有了相应配置文件的相对路径问题。     
 
-<font color="87CEEB">（注意，你的仓库名必须为你Gitee上的昵称。）</font>
+<font color = 87CEEB>（注意，你的仓库名必须为你Gitee上的昵称。）</font>
 
   </div>
   <div>
@@ -367,7 +355,7 @@
     <span>分类</span>
   </a>
   <a class="author-tags-count" href="/tags">
-    <span>2</span>
+    <span>0</span>
     <span>标签</span>
   </a>
 </div>
@@ -434,10 +422,6 @@
     <div class="tags-card">
   <div class="tags-header"><i class="iconfont icon-biaoqian" style="padding-right: 2px;"></i>热门标签</div>
   <div class="tags-list">
-    
-    <a href="\tags\Tutorials" title="Tutorials"><div class="tags-list-item">Tutorials</div></a>
-    
-    <a href="\tags\Solution" title="Solution"><div class="tags-list-item">Solution</div></a>
     
   </div>
 </div>
