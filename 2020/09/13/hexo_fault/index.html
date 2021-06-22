@@ -11,13 +11,21 @@
   <title>Muo123's Blog</title>
   
   
-  <meta property="og:title" content="Muo123&#39;s Blog">
+  <meta property="og:title" content="关于Hexo+Gitee博客搭建时遇到的一些问题以及解决方案">
   
   
-  <meta property="og:url" content="http://muo123.gitee.io/tags/index.html">
+  <meta property="og:url" content="http://muo123.gitee.io/2020/09/13/hexo_fault/index.html">
   
   
   <meta property="og:img" content="/img/cat.png">
+  
+  
+  
+  <meta property="og:type" content="article">
+  <meta property="og:article:published_time" content="2020-09-13">
+  <meta property="og:article:modified_time" content="2021-06-17">
+  <meta property="og:article:author" content="Muo123">
+  
   
   
   
@@ -186,18 +194,119 @@
     <div class="section-wrap">
       <div class="container">
         <div class="columns">
-          <main class="main-column"><div class="card card-content">
-  <div class="tags-page-title" style="margin-bottom: 0.6rem;">标签</div>
+          <main class="main-column">
+<article class="card card-content">
+  <header>
+    <h1 class="post-title">
+      关于Hexo+Gitee博客搭建时遇到的一些问题以及解决方案
+    </h1>
+  </header>
+  <div class="post-meta post-show-meta">
+    <time datetime="2020-09-13T15:17:24.000Z" style="display: flex; align-items: center;">
+      <i class="iconfont icon-calendar" style="margin-right: 2px;"></i>
+      <span>2020-09-13</span>
+    </time>
+    
+    <span class="dot"></span>
+    
+    <a href="/categories/Hexo/" class="post-meta-link">Hexo</a>
+    
+    
+    
+    <span class="dot"></span>
+    <span>719 字</span>
+    
+  </div>
+  
+  </header>
+  <div id="section" class="post-content">
+    <h1 id="关于Hexo-Gitee博客搭建时遇到的一些问题以及解决方案"><a href="#关于Hexo-Gitee博客搭建时遇到的一些问题以及解决方案" class="headerlink" title="关于Hexo+Gitee博客搭建时遇到的一些问题以及解决方案"></a>关于Hexo+Gitee博客搭建时遇到的一些问题以及解决方案</h1><h2 id="localhost重定向次数过多"><a href="#localhost重定向次数过多" class="headerlink" title="localhost重定向次数过多"></a>localhost重定向次数过多</h2><p>对于这个问题，搜过很多方案，例如删除cookies，卸载浏览器重装，删除博客所有内容等，结果都以失败告终。<br>出现这样的情况，可能是因为我每次建博客失败，删除文档重来时，一直使用的新建文件夹名称都是hexo，使用<code>hexo s</code>指令生成静态页面时，使得本地访问出现地址循环定向之类的问题（这只是我个人浅陋的想法，我对网页重定向也没有很深入的了解）。     </p>
+<p>我最后解决这个问题的方案是删除hexo文档，之后新建文档命名为blog，在blog目录下重新建立博客，再用<code>hexo s</code>指令生成网页，发现最后没有出现重定向次数过多的问题。    </p>
+<p><code>（ps：虽然删档重来的确很难受，我此前已经删档重来了不下十次，所以，这个解决方案对我来说还可以接受）</code></p>
+<h2 id="Gitee-Pages部署失败（主题没有样式或使用hexo-d指令无法推送博客内容）"><a href="#Gitee-Pages部署失败（主题没有样式或使用hexo-d指令无法推送博客内容）" class="headerlink" title="Gitee Pages部署失败（主题没有样式或使用hexo d指令无法推送博客内容）"></a>Gitee Pages部署失败（主题没有样式或使用hexo d指令无法推送博客内容）</h2><p>主题没有样式的问题，大概是本地生成网页正常，部署到Gitee Pages上后主题消失，页面回到十年前，简直降维打击的感觉。这个我也搜过许多解决方案，例如<code>改变网站配置文件root的路径，将它改为“root: .”（这是指在当前目录搜索，没有样式的原因可能是网站搜索不到相关文件，打开网站检查可以看见一堆404）。</code>不过，之后我发现，不用更改root也可以直接访问页面。当初样式消失的问题可能是当初我不小心修改了某些文件，如果按照教程来做的话，应该不会碰到相关问题。   </p>
+<p>无法推送博客的问题，比较难解释，我之前部署了公钥，总出现问题，后来我直接删除了公钥，结果还是存在问题。大概可以排除公钥的因素，不过，如果你想对仓库进行写入操作，<code>公钥必须是个人公钥才行，否则部署时也会部署不上去。</code>之后，我们来谈谈我是如何解决最终问题的。      </p>
+<p>最后我发现，问题出现在仓库名称上—xxx.gitee.io。这样命名的仓库名称是万恶的来源，具体原因和解决方案可以在<a target="_blank" rel="noopener" href="https://gitee.com/help/articles/4136#article-header0">Gitee Page</a>原网页找到。具体是pages的二级目录的问题，只要把仓库名的后缀删去即可，这样就没有了相应配置文件的相对路径问题。     </p>
+<p><code>（注意，你的仓库名必须为你Gitee上的昵称。）</code></p>
+
+  </div>
   <div>
-    共计&nbsp;0&nbsp;个标签
+  
+  <div class="post-note note-warning copyright" style="margin-top: 42px">
+    <p><span style="font-weight: bold;">作者：</span><a target="_blank" rel="nofollow noopener noreferrer" href="http://muo123.gitee.io/about">muo123</a></p>
+    <p><span style="font-weight: bold;">文章链接：</span><a target="_blank" rel="nofollow noopener noreferrer" href="http://muo123.gitee.io/2020/09/13/hexo_fault/">http://muo123.gitee.io/2020/09/13/hexo_fault/</a></p>
+    <p><span style="font-weight: bold;">版权声明：</span>本博客所有文章除特别声明外，均采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0 协议</a>。转载请注明出处！</p>
   </div>
+  
+  </div>
+</article>
+<div class="nav">
+  
+  <div class="nav-item-prev">
+    <a href="/2020/10/04/construct3/" class="nav-link">
+      <i class="iconfont icon-left nav-prev-icon"></i>
+      <div>
+        <div class="nav-label">上一篇</div>
+        
+        <div class="nav-title">Construct3制作射击小游戏（新手向） </div>
+        
+      </div>
+    </a>
+  </div>
+  
+  
+  <div class="nav-item-next">
+    <a href="/2020/09/13/hexo-create/" class="nav-link">
+      <div>
+        <div class="nav-label">下一篇</div>
+        
+        <div class="nav-title">Hexo+Gitee博客搭建详细教程 </div>
+        
+      </div>
+      <i class="iconfont icon-right nav-next-icon"></i>
+    </a>
+  </div>
+  
 </div>
-<div class="card card-content">
-  <div class="tags-card">
-    <div class="tags-list">
-      
-    </div>
-  </div>
+
+<div class="card card-content comment-card" style="margin-top: 16px;">
+  <div class="comment-card-title">评论</div>
+  
+  <div id="vcomments"></div>
+  
+  <script>
+    loadScript("//unpkg.com/valine/dist/Valine.min.js");
+    var oldLoadVa = window.onload;
+    window.onload = function () {
+      oldLoadVa && oldLoadVa();
+      new Valine({
+        el: '#vcomments',
+        appId: 'W5D2PsOTlwFzBQVD8LcVi2HH-gzGzoHsz',
+        appKey: 'CV4r2ngI9G9qIYz94DJLpb1s',
+        placeholder: '欢迎评论',
+        path: window.location.pathname,
+        avatar: 'mp',
+        meta: ["nick","mail","link"],
+        pageSize: '10',
+        lang: '',
+        visitor: 'false',
+        highlight: true,
+        recordIP: false,
+        
+        serverURLs: 'https://muo123.cn',
+        
+        
+        
+        enableQQ: 'false',
+        requiredFields: [],
+      });
+    };
+  </script>
+
+</div>
+
+<div class="card card-content toc-card" id="mobiletoc">
+  <div class="toc-header"><i class="iconfont icon-menu" style="padding-right: 2px;"></i>目录</div>
+<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%B3%E4%BA%8EHexo-Gitee%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA%E6%97%B6%E9%81%87%E5%88%B0%E7%9A%84%E4%B8%80%E4%BA%9B%E9%97%AE%E9%A2%98%E4%BB%A5%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-text">关于Hexo+Gitee博客搭建时遇到的一些问题以及解决方案</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#localhost%E9%87%8D%E5%AE%9A%E5%90%91%E6%AC%A1%E6%95%B0%E8%BF%87%E5%A4%9A"><span class="toc-text">localhost重定向次数过多</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Gitee-Pages%E9%83%A8%E7%BD%B2%E5%A4%B1%E8%B4%A5%EF%BC%88%E4%B8%BB%E9%A2%98%E6%B2%A1%E6%9C%89%E6%A0%B7%E5%BC%8F%E6%88%96%E4%BD%BF%E7%94%A8hexo-d%E6%8C%87%E4%BB%A4%E6%97%A0%E6%B3%95%E6%8E%A8%E9%80%81%E5%8D%9A%E5%AE%A2%E5%86%85%E5%AE%B9%EF%BC%89"><span class="toc-text">Gitee Pages部署失败（主题没有样式或使用hexo d指令无法推送博客内容）</span></a></li></ol></li></ol>
 </div></main>
           <aside class="left-column">
             
@@ -249,6 +358,13 @@
             <div class="sticky-tablet">
   
   
+  <article class="display-when-two-columns spacer">
+    <div class="card card-content toc-card">
+      <div class="toc-header"><i class="iconfont icon-menu" style="padding-right: 2px;"></i>目录</div>
+<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%B3%E4%BA%8EHexo-Gitee%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA%E6%97%B6%E9%81%87%E5%88%B0%E7%9A%84%E4%B8%80%E4%BA%9B%E9%97%AE%E9%A2%98%E4%BB%A5%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-text">关于Hexo+Gitee博客搭建时遇到的一些问题以及解决方案</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#localhost%E9%87%8D%E5%AE%9A%E5%90%91%E6%AC%A1%E6%95%B0%E8%BF%87%E5%A4%9A"><span class="toc-text">localhost重定向次数过多</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Gitee-Pages%E9%83%A8%E7%BD%B2%E5%A4%B1%E8%B4%A5%EF%BC%88%E4%B8%BB%E9%A2%98%E6%B2%A1%E6%9C%89%E6%A0%B7%E5%BC%8F%E6%88%96%E4%BD%BF%E7%94%A8hexo-d%E6%8C%87%E4%BB%A4%E6%97%A0%E6%B3%95%E6%8E%A8%E9%80%81%E5%8D%9A%E5%AE%A2%E5%86%85%E5%AE%B9%EF%BC%89"><span class="toc-text">Gitee Pages部署失败（主题没有样式或使用hexo d指令无法推送博客内容）</span></a></li></ol></li></ol>
+    </div>
+  </article>
+  
   
   <article class="card card-content categories-widget">
     <div class="categories-card">
@@ -297,69 +413,16 @@
   </article>
   
   
-  <article class="card card-content widescreen-archive archive-widget">
-    <div class="archive-card">
-  <div class="archive-card-header"><i class="iconfont icon-wodebaobiao" style="padding-right: 2px;"></i>归档</div>
-  <div class="archive-card-list">
-    
-    
-    
-      
-        
-        
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-          <a href="/archives/2021" class="archive-card-list-item">
-              2021
-              <span class="archive-card-list-item-badge">4</span>
-          </a>
-        
-        
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-    
-      <a href="/archives/2020" class="archive-card-list-item">
-          2020
-          <span class="archive-card-list-item-badge">4</span>
-      </a>
-    
-  </div>
-</div>
-  </article>
-  
 </div>
           </aside>
           <aside class="right-column">
             <div class="sticky-widescreen">
   
+  
+  <article class="card card-content toc-card">
+    <div class="toc-header"><i class="iconfont icon-menu" style="padding-right: 2px;"></i>目录</div>
+<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%B3%E4%BA%8EHexo-Gitee%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA%E6%97%B6%E9%81%87%E5%88%B0%E7%9A%84%E4%B8%80%E4%BA%9B%E9%97%AE%E9%A2%98%E4%BB%A5%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-text">关于Hexo+Gitee博客搭建时遇到的一些问题以及解决方案</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#localhost%E9%87%8D%E5%AE%9A%E5%90%91%E6%AC%A1%E6%95%B0%E8%BF%87%E5%A4%9A"><span class="toc-text">localhost重定向次数过多</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Gitee-Pages%E9%83%A8%E7%BD%B2%E5%A4%B1%E8%B4%A5%EF%BC%88%E4%B8%BB%E9%A2%98%E6%B2%A1%E6%9C%89%E6%A0%B7%E5%BC%8F%E6%88%96%E4%BD%BF%E7%94%A8hexo-d%E6%8C%87%E4%BB%A4%E6%97%A0%E6%B3%95%E6%8E%A8%E9%80%81%E5%8D%9A%E5%AE%A2%E5%86%85%E5%AE%B9%EF%BC%89"><span class="toc-text">Gitee Pages部署失败（主题没有样式或使用hexo d指令无法推送博客内容）</span></a></li></ol></li></ol>
+  </article>
   
   
   <article class="card card-content">
@@ -391,64 +454,6 @@
 </div>
   </article>
   
-  
-  <article class="card card-content">
-    <div class="archive-card">
-  <div class="archive-card-header"><i class="iconfont icon-wodebaobiao" style="padding-right: 2px;"></i>归档</div>
-  <div class="archive-card-list">
-    
-    
-    
-      
-        
-        
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-          <a href="/archives/2021" class="archive-card-list-item">
-              2021
-              <span class="archive-card-list-item-badge">4</span>
-          </a>
-        
-        
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-      
-        
-      
-    
-    
-      <a href="/archives/2020" class="archive-card-list-item">
-          2020
-          <span class="archive-card-list-item-badge">4</span>
-      </a>
-    
-  </div>
-</div>
-  </article>
   
 </div>
           </aside>
@@ -523,6 +528,20 @@
 
   
   
+  
+
+  
+  
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        }
+      };
+    </script>
+    
+<script src="//cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-svg.js"></script>
+
   
 
   
