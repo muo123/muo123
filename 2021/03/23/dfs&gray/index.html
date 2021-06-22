@@ -23,9 +23,11 @@
   
   <meta property="og:type" content="article">
   <meta property="og:article:published_time" content="2021-03-23">
-  <meta property="og:article:modified_time" content="2021-03-24">
+  <meta property="og:article:modified_time" content="2021-06-22">
   <meta property="og:article:author" content="Muo123">
   
+  
+  <meta property="og:article:tag" content="C">
   
   
   
@@ -218,11 +220,21 @@
     
   </div>
   
+  <div class="post-meta post-show-meta" style="margin-top: -10px;">
+    <div style="display: flex; align-items: center;">
+      <i class="iconfont icon-biaoqian" style="margin-right: 2px; font-size: 1.15rem;"></i>
+      
+      
+        <a href="/tags/C/" class="post-meta-link">C</a>
+      
+    </div>
+  </div>
+  
   </header>
   <div id="section" class="post-content">
-    <h2 id="使用DFS枚举格雷码"><a href="#使用DFS枚举格雷码" class="headerlink" title="使用DFS枚举格雷码"></a>使用DFS枚举格雷码</h2><p><font color = red>问题</font>：给定正整数$n$，需要输出$2^n$个$n$位01串，且相邻01串之间只允许有一位不相同。<br>$n=2$时的结果：00，01，11，10<br>$n=3$时的结果：000，001，011，010，110，111，101，100    </p>
-<p><font color = red>思路</font>：由题目描述，可以联想到格雷码，相邻字符串只有1位不同。等长01串，使用二叉树结构储存，通过特定的排列，使得根节点到叶子节点的路径上刚好是所需要的01串,最后通过对二叉树遍历，输出所有可能的结果。每次遍历都需要从根节点到叶子节点，同时记录路径上的01值，可以使用DFS(深度优先搜索)进行遍历。</p>
-<p><font color = red>算法</font>:<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+    <h2 id="使用DFS枚举格雷码"><a href="#使用DFS枚举格雷码" class="headerlink" title="使用DFS枚举格雷码"></a>使用DFS枚举格雷码</h2><p><font color="red">问题</font>：给定正整数$n$，需要输出$2^n$个$n$位01串，且相邻01串之间只允许有一位不相同。<br>$n=2$时的结果：00，01，11，10<br>$n=3$时的结果：000，001，011，010，110，111，101，100    </p>
+<p><font color="red">思路</font>：由题目描述，可以联想到格雷码，相邻字符串只有1位不同。等长01串，使用二叉树结构储存，通过特定的排列，使得根节点到叶子节点的路径上刚好是所需要的01串,最后通过对二叉树遍历，输出所有可能的结果。每次遍历都需要从根节点到叶子节点，同时记录路径上的01值，可以使用DFS(深度优先搜索)进行遍历。</p>
+<p><font color="red">算法</font>:<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
 <span class="token comment">/*input函数用来控制输入信息，防止输入违法数值*/</span>
 <span class="token keyword">int</span> <span class="token function">input</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span> n<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
     <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> n<span class="token punctuation">)</span><span class="token punctuation">;</span>
@@ -286,7 +298,7 @@
     <span class="token function">create</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
     <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
 <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></p>
-<p><font color = red>结果</font>：</p>
+<p><font color="red">结果</font>：</p>
 <p><img src="https://pic.rmb.bdstatic.com/bjh/d81012d5b3a1410aa29632ef960dee3d.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/d81012d5b3a1410aa29632ef960dee3d.png" class="lozad post-image"></p>
 
   </div>
@@ -387,7 +399,7 @@
     <span>分类</span>
   </a>
   <a class="author-tags-count" href="/tags">
-    <span>0</span>
+    <span>1</span>
     <span>标签</span>
   </a>
 </div>
@@ -468,6 +480,8 @@
     <div class="tags-card">
   <div class="tags-header"><i class="iconfont icon-biaoqian" style="padding-right: 2px;"></i>热门标签</div>
   <div class="tags-list">
+    
+    <a href="\tags\C" title="C"><div class="tags-list-item">C</div></a>
     
   </div>
 </div>

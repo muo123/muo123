@@ -4,7 +4,7 @@
     <title>打印日历的C语言实现</title>
     <url>/2021/03/10/calendar/</url>
     <content><![CDATA[<h2 id="打印日历的C语言实现"><a href="#打印日历的C语言实现" class="headerlink" title="打印日历的C语言实现"></a>打印日历的C语言实现</h2><p>实现nextDate函数，通过调用nextDate函数来打印出2021年的日历</p>
-<font color = orange>
+<font color="orange">
 int nextDate(int month, int date, int year)
 </font>  
 
@@ -102,6 +102,9 @@ int nextDate(int month, int date, int year)
       <categories>
         <category>problems</category>
       </categories>
+      <tags>
+        <tag>C</tag>
+      </tags>
   </entry>
   <entry>
     <title>大数据技术下新媒体用户画像与隐私安全</title>
@@ -140,9 +143,9 @@ int nextDate(int month, int date, int year)
   <entry>
     <title>使用DFS枚举格雷码</title>
     <url>/2021/03/23/dfs&amp;gray/</url>
-    <content><![CDATA[<h2 id="使用DFS枚举格雷码"><a href="#使用DFS枚举格雷码" class="headerlink" title="使用DFS枚举格雷码"></a>使用DFS枚举格雷码</h2><p><font color = red>问题</font>：给定正整数$n$，需要输出$2^n$个$n$位01串，且相邻01串之间只允许有一位不相同。<br>$n=2$时的结果：00，01，11，10<br>$n=3$时的结果：000，001，011，010，110，111，101，100    </p>
-<p><font color = red>思路</font>：由题目描述，可以联想到格雷码，相邻字符串只有1位不同。等长01串，使用二叉树结构储存，通过特定的排列，使得根节点到叶子节点的路径上刚好是所需要的01串,最后通过对二叉树遍历，输出所有可能的结果。每次遍历都需要从根节点到叶子节点，同时记录路径上的01值，可以使用DFS(深度优先搜索)进行遍历。</p>
-<p><font color = red>算法</font>:<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+    <content><![CDATA[<h2 id="使用DFS枚举格雷码"><a href="#使用DFS枚举格雷码" class="headerlink" title="使用DFS枚举格雷码"></a>使用DFS枚举格雷码</h2><p><font color="red">问题</font>：给定正整数$n$，需要输出$2^n$个$n$位01串，且相邻01串之间只允许有一位不相同。<br>$n=2$时的结果：00，01，11，10<br>$n=3$时的结果：000，001，011，010，110，111，101，100    </p>
+<p><font color="red">思路</font>：由题目描述，可以联想到格雷码，相邻字符串只有1位不同。等长01串，使用二叉树结构储存，通过特定的排列，使得根节点到叶子节点的路径上刚好是所需要的01串,最后通过对二叉树遍历，输出所有可能的结果。每次遍历都需要从根节点到叶子节点，同时记录路径上的01值，可以使用DFS(深度优先搜索)进行遍历。</p>
+<p><font color="red">算法</font>:<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
 <span class="token comment">/*input函数用来控制输入信息，防止输入违法数值*/</span>
 <span class="token keyword">int</span> <span class="token function">input</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span> n<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
     <span class="token function">scanf</span><span class="token punctuation">(</span><span class="token string">"%d"</span><span class="token punctuation">,</span> n<span class="token punctuation">)</span><span class="token punctuation">;</span>
@@ -206,12 +209,15 @@ int nextDate(int month, int date, int year)
     <span class="token function">create</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>n<span class="token punctuation">)</span><span class="token punctuation">;</span>
     <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
 <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></p>
-<p><font color = red>结果</font>：</p>
+<p><font color="red">结果</font>：</p>
 <p><img src="https://pic.rmb.bdstatic.com/bjh/d81012d5b3a1410aa29632ef960dee3d.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/d81012d5b3a1410aa29632ef960dee3d.png" class="lozad post-image"></p>
 ]]></content>
       <categories>
         <category>problems</category>
       </categories>
+      <tags>
+        <tag>C</tag>
+      </tags>
   </entry>
   <entry>
     <title>互联网时代的热点领域与营销方法</title>
