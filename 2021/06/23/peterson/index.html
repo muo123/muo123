@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html>
+<meta  lang="zh-CN" >
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="theme-color" content="#fff" id="theme-color">
+  <link rel="icon" href="/img/favicon.ico">
+  <title>Muo123's Blog</title>
+  
+  
+  <meta property="og:title" content="CPU 调度算法">
+  
+  
+  <meta property="og:url" content="http://muo123.gitee.io/2021/06/23/peterson/index.html">
+  
+  
+  <meta property="og:img" content="/img/cat.png">
+  
+  
+  
+  <meta property="og:type" content="article">
+  <meta property="og:article:published_time" content="2021-06-23">
+  <meta property="og:article:modified_time" content="2021-06-23">
+  <meta property="og:article:author" content="Muo123">
+  
+  
+  <meta property="og:article:tag" content="C">
+  
+  
+  
+  
+  <script>
+    // control reverse button
+    var reverseDarkList = {
+      dark: 'light',
+      light: 'dark'
+    };
+    var themeColor = {
+      dark: '#1c1c1e',
+      light: '#fff'
+    }
+    // get the data of css prefers-color-scheme
+    var getCssMediaQuery = function() {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    };
+    // reverse current darkmode setting function
+    var reverseDarkModeSetting = function() {
+      var setting = localStorage.getItem('user-color-scheme');
+      if(reverseDarkList[setting]) {
+        setting = reverseDarkList[setting];
+      } else if(setting === null) {
+        setting = reverseDarkList[getCssMediaQuery()];
+      } else {
+        return;
+      }
+      localStorage.setItem('user-color-scheme', setting);
+      return setting;
+    };
+    // apply current darkmode setting
+    var setDarkmode = function(mode) {
+      var setting = mode || localStorage.getItem('user-color-scheme');
+      if(setting === getCssMediaQuery()) {
+        document.documentElement.removeAttribute('data-user-color-scheme');
+        localStorage.removeItem('user-color-scheme');
+        document.getElementById('theme-color').content = themeColor[setting];
+      } else if(reverseDarkList[setting]) {
+        document.documentElement.setAttribute('data-user-color-scheme', setting);
+        document.getElementById('theme-color').content = themeColor[setting];
+      } else {
+        document.documentElement.removeAttribute('data-user-color-scheme');
+        localStorage.removeItem('user-color-scheme');
+        document.getElementById('theme-color').content = themeColor[getCssMediaQuery()];
+      }
+    };
+    setDarkmode();
+  </script>
+  <script>
+    function loadScript(url, cb) {
+      var script = document.createElement('script');
+      script.src = url;
+      if (cb) script.onload = cb;
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  </script>
+  
+  <link rel="preload" href="//at.alicdn.com/t/font_1946621_f7g5jnuftcf.css" as="style" >
+  <link rel="preload" href="//at.alicdn.com/t/font_1952792_89b4ac4k4up.css" as="style" >
+  
+  <link rel="preload" href="//cdn.jsdelivr.net/npm/fslightbox@3.1.0/index.min.js" as="script">
+  
+  
+  <link rel="preload" href="/js/lib/lozad.min.js" as="script">
+  
+  
+  
+  
+  
+  <link rel="prefetch" href="//cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-svg.js" as="script">
+  
+  
+  
+  <link rel="prefetch" href="//unpkg.com/valine/dist/Valine.min.js" as="script">
+  
+  
+  
+  
+<link rel="stylesheet" href="/css/main.css">
+
+  
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1946621_f7g5jnuftcf.css">
+
+  
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1952792_89b4ac4k4up.css">
+
+  
+  
+  
+  
+  
+  <link href="/js/lib/prism/prism.min.css" rel="stylesheet" data-prism="prism">
+  
+  
+  
+<link rel="stylesheet" href="/js/lib/prism/prism-line-numbers.min.css">
+
+  
+  
+  
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.1.1"></head>
+
+
+<body>
+  <div class="wrapper">
+    
+    <nav class="navbar">
+  <div class="navbar-logo">
+    <span class="navbar-logo-main">
+      
+      <img class="navbar-logo-img" src="/img/favicon.ico">
+      
+      <span class="navbar-logo-dsc">Muo123's Blog</span>
+    </span>
+  </div>
+  <div class="navbar-menu">
+    
+    <a href="/" class="navbar-menu-item">
+    
+    首页
+    
+    </a>
+    
+    <a href="/archives" class="navbar-menu-item">
+    
+    归档
+    
+    </a>
+    
+    <a href="/tags" class="navbar-menu-item">
+    
+    标签
+    
+    </a>
+    
+    <a href="/categories" class="navbar-menu-item">
+    
+    分类
+    
+    </a>
+    
+    <a href="/about" class="navbar-menu-item">
+    
+    关于
+    
+    </a>
+    
+    <a class="navbar-menu-item darknavbar" id="dark"><i class="iconfont icon-weather"></i></a>
+    <a class="navbar-menu-item searchnavbar" id="search"><i class="iconfont icon-search" style="font-size: 1.2rem; font-weight: 400;"></i></a>
+  </div>
+</nav>
+    
+    <div id="local-search" style="display: none;">
+      <input class="navbar-menu-item" id="search-input" placeholder="请输入搜索内容...">
+      <div id="search-content"></div>
+    </div>
+    
+    <div class="section-wrap">
+      <div class="container">
+        <div class="columns">
+          <main class="main-column">
+<article class="card card-content">
+  <header>
+    <h1 class="post-title">
+      CPU 调度算法
+    </h1>
+  </header>
+  <div class="post-meta post-show-meta">
+    <time datetime="2021-06-23T03:12:05.000Z" style="display: flex; align-items: center;">
+      <i class="iconfont icon-calendar" style="margin-right: 2px;"></i>
+      <span>2021-06-23</span>
+    </time>
+    
+    <span class="dot"></span>
+    
+    <a href="/categories/Problems/" class="post-meta-link">Problems</a>
+    
+    
+    
+    <span class="dot"></span>
+    <span>3.5k 字</span>
+    
+  </div>
+  
+  <div class="post-meta post-show-meta" style="margin-top: -10px;">
+    <div style="display: flex; align-items: center;">
+      <i class="iconfont icon-biaoqian" style="margin-right: 2px; font-size: 1.15rem;"></i>
+      
+      
+        <a href="/tags/C/" class="post-meta-link">C</a>
+      
+    </div>
+  </div>
+  
+  </header>
+  <div id="section" class="post-content">
+    <h2 id="一、内容：CPU-调度。"><a href="#一、内容：CPU-调度。" class="headerlink" title="一、内容：CPU 调度。"></a>一、内容：CPU 调度。</h2><ul>
+<li>尝试基于 POSIX API 设计一个简单调度器（不考虑资源竞争问题）：<ul>
+<li>创建一些 Pthread 线程任务，建立一个管理链队列，结点内容起码包括到达时间、WCT、优先级、调度状态（运行、就绪、阻塞）等调度参数；</li>
+<li>每个任务有一个调度信号量，任务启动后在其调度信号量上执行 wait；</li>
+<li>调度器按照调度策略对处于运行态的任务（如果有的话）的调度信号量执行 wait，并选取适当任务的调度信号量执行 signal；</li>
+<li>实现简单调度策略：FCFS、SJB、Priority。分别计算任务平均等待时间。</li>
+</ul>
+</li>
+</ul>
+<h2 id="二、原理"><a href="#二、原理" class="headerlink" title="二、原理"></a>二、原理</h2><blockquote>
+<p>FCFS</p>
+</blockquote>
+<ul>
+<li>最简单的CPU调度算法是先到先服务算法（first-come，first-served，FCFS）。采用这种方案，先请求CPU的进程被首先分配到CPU。FCFS 策略可以用 FIFO 队列来容易实现。当一个进程进入到就绪队列，其 PCB 被链接到队列的尾部。当 CPU 空闲时，CPU被分配给位于队列头的进程。接着，该运行进程从队列中被删除。FCFS 调度的代码编写简单且容易理解。不过，采用 FCFS 策略的平均等待时间通常相当长。</li>
+</ul>
+<blockquote>
+<p>SJF</p>
+</blockquote>
+<ul>
+<li>最短作业优先调度算法（shortest-job-first，SJF），这一算法将每个进程与其下一个CPU区间段相关联。当 CPU 为可用时，它会赋给具有最短后续 CPU 区间的进程。如果两个进程具有相同长度的 CPU 区间，那么可以使用 FCFS 调度来处理。注意一个更为适当的表示是最短的下一个 CPU 区间，这是因为调度的完成是通过检查进程的下一个 CPU 区间的长度，而不是其总长度。</li>
+</ul>
+<blockquote>
+<p>Priority</p>
+</blockquote>
+<ul>
+<li>SJF算法可作为通用优先级调度算法（priority-scheduling algorithm）的一个特例。每个进程都有一个优先权与其关联，具有最高优先权的进程会被分配到 CPU。具有相同优先权的进程按 FCFS 顺序调度。SJF 作为优先权算法，其优先权为下一个 CPU区间的倒数。CPU 区间越大，则优先权越小；反之亦然。注意这里按照高优先权和低优先权来讨论调度。优先权通常为固定区间的数字，如 0 到 7，或 0 到 4095。</li>
+</ul>
+<h2 id="三、设计"><a href="#三、设计" class="headerlink" title="三、设计"></a>三、设计</h2><p>首先考虑线程任务需要包含哪些成员变量，例如任务的到达时间、CPU执行时间、任务的优先级以及任务的调度状态等。之后，考虑任务调度中需要用到的成员函数：</p>
+<ul>
+<li>FCFS调度策略：FCFS_scheduling</li>
+<li>SJF调度策略：SJF_scheduling</li>
+<li>Priority调度策略：Priority_scheduling</li>
+</ul>
+<p><code>注意：所实现的调度策略都是采用非抢占式调度模式</code></p>
+<p>具体代码实现如下所示：<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_N</span> <span class="token expression"><span class="token number">5</span>			</span><span class="token comment">//CPU调度中的总任务数</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_PRIORITY</span> <span class="token expression"><span class="token number">7</span>	</span><span class="token comment">//最大优先级</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">IFINITE</span> <span class="token expression"><span class="token number">999</span>	  	</span><span class="token comment">//无穷大数</span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre><br>首先进行宏定义，如CPU调度中的最大任务数、优先级调度的最大优先级以及程序中所使用的无穷大</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">typedef</span> <span class="token keyword">enum</span> <span class="token class-name">STATUS</span> <span class="token punctuation">&#123;</span>	<span class="token comment">//任务的调度状态：就绪、运行、阻塞、结束</span>
+	READY<span class="token punctuation">,</span> RUNNING<span class="token punctuation">,</span> BLOCKED<span class="token punctuation">,</span> FINISHED
+<span class="token punctuation">&#125;</span>STATUS<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p>使用枚举类型列举任务的调度状态：就绪、运行、阻塞、结束</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c">TASK tasks<span class="token punctuation">[</span>MAX_N<span class="token punctuation">]</span><span class="token punctuation">;</span>		<span class="token comment">//全局任务静态链表</span>
+<span class="token class-name">sem_t</span> schedule_sem<span class="token punctuation">;</span>		<span class="token comment">//调度器信号量</span>
+<span class="token keyword">int</span> chart<span class="token punctuation">[</span>MAX_N<span class="token punctuation">]</span><span class="token punctuation">[</span>IFINITE<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>	<span class="token comment">//甘特图数组</span>
+<span class="token keyword">int</span> current_time<span class="token punctuation">;</span>		<span class="token comment">//CPU当前运行时间</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<p>定义相关全局变量，<code>tasks</code>作为任务的静态链表，用于任务调度；<code>schedule_sem</code>作为调度器信号量，当任务完成时，提示调度器选取下一个任务进入运行态；<code>chart</code>是用于储存甘特图的字符数组，每次任务执行时，会记录相关任务执行过程；<code>current_time</code>记录当前CPU的运行时间。</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token operator">*</span><span class="token function">thread_work</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span>arg<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token keyword">int</span> <span class="token operator">*</span>numptr <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span><span class="token punctuation">)</span>arg<span class="token punctuation">;</span>	<span class="token comment">//参数转换</span>
+	<span class="token keyword">int</span> num <span class="token operator">=</span> <span class="token operator">*</span>numptr<span class="token punctuation">;</span>
+
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"thread-%lu is created\n"</span><span class="token punctuation">,</span> <span class="token function">pthread_self</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">sem_wait</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>tasks<span class="token punctuation">[</span>num<span class="token punctuation">]</span><span class="token punctuation">.</span>sem<span class="token punctuation">)</span><span class="token punctuation">;</span>	<span class="token comment">//在任务到来前执行 wait</span>
+
+	tasks<span class="token punctuation">[</span>num<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">=</span> RUNNING<span class="token punctuation">;</span>	<span class="token comment">//任务开始执行</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"thread-%lu is working on task-%d\n"</span><span class="token punctuation">,</span> <span class="token function">pthread_self</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> num<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> tasks<span class="token punctuation">[</span>num<span class="token punctuation">]</span><span class="token punctuation">.</span>burst_time<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>	<span class="token comment">//储存当前任务执行过程，用作甘特图图示</span>
+		chart<span class="token punctuation">[</span>num<span class="token punctuation">]</span><span class="token punctuation">[</span>i <span class="token operator">+</span> current_time<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+
+	tasks<span class="token punctuation">[</span>num<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">=</span> FINISHED<span class="token punctuation">;</span>	<span class="token comment">//任务结束运行</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"thread-%lu has finished task-%d\n"</span><span class="token punctuation">,</span> <span class="token function">pthread_self</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> num<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">sem_post</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>schedule_sem<span class="token punctuation">)</span><span class="token punctuation">;</span>	<span class="token comment">//通知调度器可以调度新的任务</span>
+	<span class="token function">pthread_exit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>线程函数在任务启动后，在任务信号量<code>sem</code>上执行等待，直至调度器开始调度任务才开始运行。同时，在任务执行时，记录任务执行过程，供之后甘特图展示。在任务完成后，任务的调度状态修改为结束态，通知调度器可以调度新任务执行，最后退出任务。</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//函数用于初始化任务列表</span>
+<span class="token keyword">void</span> <span class="token function">tasks_init</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+		tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>arrival_time <span class="token operator">=</span> i <span class="token operator">*</span> <span class="token number">2</span><span class="token punctuation">;</span>
+		tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">=</span> BLOCKED<span class="token punctuation">;</span>
+		<span class="token keyword">int</span> ret <span class="token operator">=</span> <span class="token function">sem_init</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>sem<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token keyword">if</span><span class="token punctuation">(</span>ret <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+			<span class="token function">perror</span><span class="token punctuation">(</span><span class="token string">"tasks:sem_init()"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+			<span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span>
+	<span class="token punctuation">&#125;</span>
+
+	tasks<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>burst_time <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">;</span>
+	tasks<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>burst_time <span class="token operator">=</span> <span class="token number">6</span><span class="token punctuation">;</span>
+	tasks<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">.</span>burst_time <span class="token operator">=</span> <span class="token number">4</span><span class="token punctuation">;</span>
+	tasks<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">.</span>burst_time <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">;</span>
+	tasks<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">.</span>burst_time <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span>
+
+	tasks<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span>priority <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">;</span>
+	tasks<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>priority <span class="token operator">=</span> <span class="token number">7</span><span class="token punctuation">;</span>
+	tasks<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">.</span>priority <span class="token operator">=</span> <span class="token number">6</span><span class="token punctuation">;</span>
+	tasks<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">.</span>priority <span class="token operator">=</span> <span class="token number">2</span><span class="token punctuation">;</span>
+	tasks<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">.</span>priority <span class="token operator">=</span> <span class="token number">4</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>函数<code>tasks_init</code>用于初始化任务列表，初始化的变量有任务到达时间<code>arrival_time</code>、任务状态<code>status</code>、任务信号量<code>sem</code>、任务CPU执行时间<code>burst_time</code>以及当前任务的优先级<code>priority</code>。初始化后的任务列表如下所示：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Process</th>
+<th style="text-align:center">Arrival time</th>
+<th style="text-align:center">Burst time</th>
+<th style="text-align:center">Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">P0</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">3</td>
+<td style="text-align:center">3</td>
+</tr>
+<tr>
+<td style="text-align:center">P1</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">6</td>
+<td style="text-align:center">7 </td>
+</tr>
+<tr>
+<td style="text-align:center">P2</td>
+<td style="text-align:center">4</td>
+<td style="text-align:center">4</td>
+<td style="text-align:center">6</td>
+</tr>
+<tr>
+<td style="text-align:center">P3</td>
+<td style="text-align:center">6</td>
+<td style="text-align:center">5</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:center">P4</td>
+<td style="text-align:center">8</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">4</td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span> <span class="token function">tasks_print</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n********tasks graph********\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Task Arrival Burst Priority\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+		<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d\t%d\t%d\t%d\n"</span><span class="token punctuation">,</span> i<span class="token punctuation">,</span> tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>arrival_time<span class="token punctuation">,</span> tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>burst_time<span class="token punctuation">,</span> tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>priority<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"***************************\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>函数<code>tasks_print</code>用于打印当前测试的任务队列：任务名 到达时间 执行时间 优先级</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span> <span class="token function">chart_print</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\nThe Gantt Chart for the schedule\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"-------------------------------\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+		<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"task-%d "</span><span class="token punctuation">,</span> i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> current_time<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+			<span class="token keyword">if</span><span class="token punctuation">(</span>chart<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+			<span class="token keyword">else</span> <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"*"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span>
+		<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"-------------------------------\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>函数<code>chart_print</code>用于打印任务执行过程的甘特图，演示任务调度时的总体到达情况和执行用时</p>
+<h3 id="1、FCFS-策略"><a href="#1、FCFS-策略" class="headerlink" title="1、FCFS 策略"></a>1、FCFS 策略</h3><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//FCFS-先到先服务调度策略</span>
+<span class="token keyword">void</span> <span class="token function">FCFS_scheduling</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n-----FCFS scheduling-----\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token keyword">int</span> total_wait_time <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>	<span class="token comment">//任务等待的总用时</span>
+	<span class="token keyword">int</span> total_burst_time <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>	<span class="token comment">//任务执行总用时</span>
+	<span class="token keyword">int</span> task_num <span class="token operator">=</span> MAX_N<span class="token punctuation">;</span>		<span class="token comment">//需要执行的任务数</span>
+	<span class="token keyword">int</span> first_task <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>			<span class="token comment">//第一个到达的任务</span>
+	<span class="token keyword">int</span> arrive_task <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>		<span class="token comment">//到达的任务</span>
+	<span class="token keyword">int</span> arrive_time<span class="token punctuation">;</span>			<span class="token comment">//任务到达的时间</span>
+	current_time <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>			<span class="token comment">//CPU当前运行时间</span>
+
+	<span class="token keyword">while</span><span class="token punctuation">(</span>task_num <span class="token operator">>=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>		<span class="token comment">//当任务数大于等于 0 时，进行CPU调度</span>
+		<span class="token function">sem_wait</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>schedule_sem<span class="token punctuation">)</span><span class="token punctuation">;</span>	<span class="token comment">//调度器等待任务完成</span>
+		current_time <span class="token operator">=</span> total_burst_time<span class="token punctuation">;</span>	<span class="token comment">//当前运行时间等于任务执行总用时</span>
+
+		<span class="token keyword">if</span><span class="token punctuation">(</span>task_num <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span>	<span class="token comment">//如果任务数为 0，即任务全部执行结束，就退出调度</span>
+
+		<span class="token keyword">if</span><span class="token punctuation">(</span>first_task <span class="token operator">==</span> arrive_task<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>		<span class="token comment">//第一个任务到达时，直接进入内核运行</span>
+			tasks<span class="token punctuation">[</span>first_task<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">=</span> READY<span class="token punctuation">;</span>	<span class="token comment">//第一个任务调度状态变为就绪态</span>
+			arrive_task <span class="token operator">==</span> first_task<span class="token punctuation">;</span>	<span class="token comment">//第一个任务到达</span>
+		<span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+			<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>	<span class="token comment">//比较当前运行时间和任务到达时间，如果任务已到达，就转为就绪态</span>
+				<span class="token keyword">if</span><span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">==</span> BLOCKED <span class="token operator">&amp;&amp;</span> total_burst_time <span class="token operator">></span> tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>arrival_time<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+					tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">=</span> READY<span class="token punctuation">;</span>
+				<span class="token punctuation">&#125;</span>
+			<span class="token punctuation">&#125;</span>
+
+			<span class="token keyword">int</span> flag <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>		<span class="token comment">//查询当前就绪队列中是否存在任务</span>
+			<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+				<span class="token keyword">if</span><span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">==</span> READY<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+					flag <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+				<span class="token punctuation">&#125;</span>
+			<span class="token punctuation">&#125;</span>
+			<span class="token keyword">if</span><span class="token punctuation">(</span>flag <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>		<span class="token comment">//如果就绪队列中没有任务，就选择下一个阻塞任务进入就绪队列</span>
+				<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+					<span class="token keyword">if</span><span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">==</span> BLOCKED<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+						tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">=</span> READY<span class="token punctuation">;</span>
+						<span class="token keyword">break</span><span class="token punctuation">;</span>
+					<span class="token punctuation">&#125;</span>
+				<span class="token punctuation">&#125;</span>
+			<span class="token punctuation">&#125;</span>
+
+			arrive_time <span class="token operator">=</span> IFINITE<span class="token punctuation">;</span>
+			<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>	<span class="token comment">//选择最先到达的任务</span>
+				<span class="token keyword">if</span><span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">==</span> READY <span class="token operator">&amp;&amp;</span> arrive_time <span class="token operator">></span> tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>arrival_time<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+					arrive_time <span class="token operator">=</span> tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>arrival_time<span class="token punctuation">;</span>
+					arrive_task <span class="token operator">=</span> i<span class="token punctuation">;</span>
+				<span class="token punctuation">&#125;</span>
+			<span class="token punctuation">&#125;</span>
+		<span class="token punctuation">&#125;</span>
+
+		<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\ntask-%d arrived\n"</span><span class="token punctuation">,</span> arrive_task<span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token function">sem_post</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>tasks<span class="token punctuation">[</span>arrive_task<span class="token punctuation">]</span><span class="token punctuation">.</span>sem<span class="token punctuation">)</span><span class="token punctuation">;</span>		<span class="token comment">//通知线程执行任务</span>
+
+		<span class="token keyword">if</span><span class="token punctuation">(</span>total_burst_time <span class="token operator">></span> tasks<span class="token punctuation">[</span>arrive_task<span class="token punctuation">]</span><span class="token punctuation">.</span>arrival_time<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>	<span class="token comment">//计算任务等待时间</span>
+			total_wait_time <span class="token operator">+=</span> total_burst_time <span class="token operator">-</span> tasks<span class="token punctuation">[</span>arrive_task<span class="token punctuation">]</span><span class="token punctuation">.</span>arrival_time<span class="token punctuation">;</span>
+			total_burst_time <span class="token operator">+=</span> tasks<span class="token punctuation">[</span>arrive_task<span class="token punctuation">]</span><span class="token punctuation">.</span>burst_time<span class="token punctuation">;</span>	<span class="token comment">//更新CPU总执行时间</span>
+		<span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+			total_burst_time <span class="token operator">=</span> tasks<span class="token punctuation">[</span>arrive_task<span class="token punctuation">]</span><span class="token punctuation">.</span>burst_time <span class="token operator">+</span> tasks<span class="token punctuation">[</span>arrive_task<span class="token punctuation">]</span><span class="token punctuation">.</span>arrival_time<span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span>
+
+		arrive_task <span class="token operator">=</span> IFINITE<span class="token punctuation">;</span>
+
+		task_num<span class="token operator">--</span><span class="token punctuation">;</span>		<span class="token comment">//当前任务数量减一</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token function">sleep</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token function">chart_print</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>	<span class="token comment">//输出调度过程的甘特图</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\nFCFS: total waiting time = %d\n"</span><span class="token punctuation">,</span> total_wait_time<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"FCFS: avarage waiting time = %lf\n"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">float</span><span class="token punctuation">)</span>total_wait_time <span class="token operator">/</span> MAX_N<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n-----FCFS scheduling-----\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>函数<code>FCFS_scheduling</code>模拟 FCFS 调度策略。当任务数大于 0 时，即任务链表中的任务不为空时，调度器才进行调度，当任务链表为空时，退出调度过程。</p>
+<p>调度器首先对调度器信号量<code>schedule_sem</code>执行等待，只有当上一个任务完成后，调度器才能调度下一个任务。如果当前任务数为 0，说明任务队列中的任务已经全部完成调度，于是退出调度器。否则，执行下一轮调度。</p>
+<p>当第一个任务到达时，直接进入内核执行，而无需进行等待。如果第一个任务执行时，有其他任务到达，就将到达的任务调整到就绪队列；如果没有其他任务到达，就选择下一个阻塞任务进入就绪队列。等到内核中的任务结束，选择就绪队列中最先到达的任务进行调度。</p>
+<p>等到所有任务调度结束，就打印调度过程的甘特图，并输出调度时的平均等待时间</p>
+<h3 id="2、SJF-策略"><a href="#2、SJF-策略" class="headerlink" title="2、SJF 策略"></a>2、SJF 策略</h3><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//SJF-最短作业优先调度策略</span>
+<span class="token keyword">void</span> <span class="token function">SJF_scheduling</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n-----SJF scheduling-----\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token keyword">int</span> total_wait_time <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	<span class="token keyword">int</span> total_burst_time <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	<span class="token keyword">int</span> task_num <span class="token operator">=</span> MAX_N<span class="token punctuation">;</span>
+	<span class="token keyword">int</span> first_task <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	<span class="token keyword">int</span> shortest_task <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	<span class="token keyword">int</span> shortest_time<span class="token punctuation">;</span>
+	current_time <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+	<span class="token keyword">while</span><span class="token punctuation">(</span>task_num <span class="token operator">>=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+		<span class="token function">sem_wait</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>schedule_sem<span class="token punctuation">)</span><span class="token punctuation">;</span>
+		current_time <span class="token operator">=</span> total_burst_time<span class="token punctuation">;</span>
+
+		<span class="token keyword">if</span><span class="token punctuation">(</span>task_num <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span>
+
+		<span class="token keyword">if</span><span class="token punctuation">(</span>first_task <span class="token operator">==</span> shortest_task<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>		<span class="token comment">//第一个任务到达时，直接进入内核执行</span>
+			tasks<span class="token punctuation">[</span>first_task<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">=</span> READY<span class="token punctuation">;</span>
+			shortest_task <span class="token operator">==</span> first_task<span class="token punctuation">;</span>	
+		<span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+			<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>	<span class="token comment">//将已到达的任务转为就绪态</span>
+				<span class="token keyword">if</span><span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">==</span> BLOCKED <span class="token operator">&amp;&amp;</span> total_burst_time <span class="token operator">></span> tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>arrival_time<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+					tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">=</span> READY<span class="token punctuation">;</span>
+				<span class="token punctuation">&#125;</span>
+			<span class="token punctuation">&#125;</span>
+
+			<span class="token keyword">int</span> flag <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>		<span class="token comment">//查询当前就绪队列中是否存在任务</span>
+			<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+				<span class="token keyword">if</span><span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">==</span> READY<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+					flag <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+				<span class="token punctuation">&#125;</span>
+			<span class="token punctuation">&#125;</span>
+			<span class="token keyword">if</span><span class="token punctuation">(</span>flag <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>		<span class="token comment">//如果就绪队列中没有任务，就选择下一个阻塞任务进入就绪队列</span>
+				<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+					<span class="token keyword">if</span><span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">==</span> BLOCKED<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+						tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">=</span> READY<span class="token punctuation">;</span>
+						<span class="token keyword">break</span><span class="token punctuation">;</span>
+					<span class="token punctuation">&#125;</span>
+				<span class="token punctuation">&#125;</span>
+			<span class="token punctuation">&#125;</span>
+
+			shortest_time <span class="token operator">=</span> IFINITE<span class="token punctuation">;</span>
+			<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>	<span class="token comment">//选择执行时间最短的任务进行运行</span>
+				<span class="token keyword">if</span><span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">==</span> READY <span class="token operator">&amp;&amp;</span> shortest_time <span class="token operator">></span> tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>burst_time<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+					shortest_time <span class="token operator">=</span> tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>burst_time<span class="token punctuation">;</span>
+					shortest_task <span class="token operator">=</span> i<span class="token punctuation">;</span>
+				<span class="token punctuation">&#125;</span>
+			<span class="token punctuation">&#125;</span>
+		<span class="token punctuation">&#125;</span>
+
+		<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\ntask-%d arrived\n"</span><span class="token punctuation">,</span> shortest_task<span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token function">sem_post</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>tasks<span class="token punctuation">[</span>shortest_task<span class="token punctuation">]</span><span class="token punctuation">.</span>sem<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+		<span class="token keyword">if</span><span class="token punctuation">(</span>total_burst_time <span class="token operator">></span> tasks<span class="token punctuation">[</span>shortest_task<span class="token punctuation">]</span><span class="token punctuation">.</span>arrival_time<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+			total_wait_time <span class="token operator">+=</span> total_burst_time <span class="token operator">-</span> tasks<span class="token punctuation">[</span>shortest_task<span class="token punctuation">]</span><span class="token punctuation">.</span>arrival_time<span class="token punctuation">;</span>
+			total_burst_time <span class="token operator">+=</span> tasks<span class="token punctuation">[</span>shortest_task<span class="token punctuation">]</span><span class="token punctuation">.</span>burst_time<span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+			total_burst_time <span class="token operator">=</span> tasks<span class="token punctuation">[</span>shortest_task<span class="token punctuation">]</span><span class="token punctuation">.</span>burst_time <span class="token operator">+</span> tasks<span class="token punctuation">[</span>shortest_task<span class="token punctuation">]</span><span class="token punctuation">.</span>arrival_time<span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span>
+
+		
+
+		shortest_task <span class="token operator">=</span> IFINITE<span class="token punctuation">;</span>
+
+		task_num<span class="token operator">--</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token function">sleep</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">chart_print</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\nSJF: total waiting time = %d\n"</span><span class="token punctuation">,</span> total_wait_time<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"SJF: avarage waiting time = %lf\n"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">float</span><span class="token punctuation">)</span>total_wait_time <span class="token operator">/</span> MAX_N<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n-----SJF scheduling-----\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>函数<code>SSJF_scheduling</code>模拟 SJF 调度策略。任务链表中的任务不为空时，调度器才进行调度。调度过程与 FCFS 调度过程类似，不过此时是按照执行时间最短的作业进行调度</p>
+<p>当第一个任务到达时，同样直接进入内核执行，而无需进行等待。如果第一个任务执行时，有其他任务到达，就将到达的任务调整到就绪队列；如果没有其他任务到达，就选择下一个阻塞任务进入就绪队列。</p>
+<p>内核中的任务结束后，选择就绪队列中执行时间最短的任务进入内核执行。</p>
+<h3 id="3、Priority-策略"><a href="#3、Priority-策略" class="headerlink" title="3、Priority 策略"></a>3、Priority 策略</h3><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//Priority-优先级调度策略</span>
+<span class="token keyword">void</span> <span class="token function">Priority_scheduling</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n-----Priority scheduling-----\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+	<span class="token keyword">int</span> total_wait_time <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	<span class="token keyword">int</span> total_burst_time <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	<span class="token keyword">int</span> task_num <span class="token operator">=</span> MAX_N<span class="token punctuation">;</span>
+	<span class="token keyword">int</span> first_task <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	<span class="token keyword">int</span> priority_task <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+	<span class="token keyword">int</span> priority<span class="token punctuation">;</span>
+	current_time <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+	<span class="token keyword">while</span><span class="token punctuation">(</span>task_num <span class="token operator">>=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+		<span class="token function">sem_wait</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>schedule_sem<span class="token punctuation">)</span><span class="token punctuation">;</span>
+		current_time <span class="token operator">=</span> total_burst_time<span class="token punctuation">;</span>
+
+		<span class="token keyword">if</span><span class="token punctuation">(</span>task_num <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span>
+
+		<span class="token keyword">if</span><span class="token punctuation">(</span>first_task <span class="token operator">==</span> priority_task<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>		<span class="token comment">//第一个任务到达时，直接进入内核执行</span>
+			tasks<span class="token punctuation">[</span>first_task<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">=</span> READY<span class="token punctuation">;</span>
+			priority_task <span class="token operator">==</span> first_task<span class="token punctuation">;</span>	
+		<span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+			<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>	<span class="token comment">//将已到达的任务转为就绪态</span>
+				<span class="token keyword">if</span><span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">==</span> BLOCKED <span class="token operator">&amp;&amp;</span> total_burst_time <span class="token operator">></span> tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>arrival_time<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+					tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">=</span> READY<span class="token punctuation">;</span>
+				<span class="token punctuation">&#125;</span>
+			<span class="token punctuation">&#125;</span>
+
+			<span class="token keyword">int</span> flag <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>		<span class="token comment">//查询当前就绪队列中是否存在任务</span>
+			<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+				<span class="token keyword">if</span><span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">==</span> READY<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+					flag <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+				<span class="token punctuation">&#125;</span>
+			<span class="token punctuation">&#125;</span>
+			<span class="token keyword">if</span><span class="token punctuation">(</span>flag <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>		<span class="token comment">//如果就绪队列中没有任务，就选择下一个阻塞任务进入就绪队列</span>
+				<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+					<span class="token keyword">if</span><span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">==</span> BLOCKED<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+						tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">=</span> READY<span class="token punctuation">;</span>
+						<span class="token keyword">break</span><span class="token punctuation">;</span>
+					<span class="token punctuation">&#125;</span>
+				<span class="token punctuation">&#125;</span>
+			<span class="token punctuation">&#125;</span>
+
+			priority <span class="token operator">=</span> IFINITE<span class="token punctuation">;</span>
+			<span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>	<span class="token comment">//选择最高优先级的任务（数字从小到大，优先级从高到低）</span>
+				<span class="token keyword">if</span><span class="token punctuation">(</span>tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>status <span class="token operator">==</span> READY <span class="token operator">&amp;&amp;</span> priority <span class="token operator">></span> tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>priority<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+					priority <span class="token operator">=</span> tasks<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>priority<span class="token punctuation">;</span>
+					priority_task <span class="token operator">=</span> i<span class="token punctuation">;</span>
+				<span class="token punctuation">&#125;</span>
+			<span class="token punctuation">&#125;</span>
+		<span class="token punctuation">&#125;</span>
+
+		<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\ntask-%d arrived\n"</span><span class="token punctuation">,</span> priority_task<span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token function">sem_post</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>tasks<span class="token punctuation">[</span>priority_task<span class="token punctuation">]</span><span class="token punctuation">.</span>sem<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+		<span class="token keyword">if</span><span class="token punctuation">(</span>total_burst_time <span class="token operator">></span> tasks<span class="token punctuation">[</span>priority_task<span class="token punctuation">]</span><span class="token punctuation">.</span>arrival_time<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+			total_wait_time <span class="token operator">+=</span> total_burst_time <span class="token operator">-</span> tasks<span class="token punctuation">[</span>priority_task<span class="token punctuation">]</span><span class="token punctuation">.</span>arrival_time<span class="token punctuation">;</span>
+			total_burst_time <span class="token operator">+=</span> tasks<span class="token punctuation">[</span>priority_task<span class="token punctuation">]</span><span class="token punctuation">.</span>burst_time<span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+			total_burst_time <span class="token operator">=</span> tasks<span class="token punctuation">[</span>priority_task<span class="token punctuation">]</span><span class="token punctuation">.</span>burst_time <span class="token operator">+</span> tasks<span class="token punctuation">[</span>priority_task<span class="token punctuation">]</span><span class="token punctuation">.</span>arrival_time<span class="token punctuation">;</span>
+		<span class="token punctuation">&#125;</span>
+
+		
+
+		priority_task <span class="token operator">=</span> IFINITE<span class="token punctuation">;</span>
+
+		task_num<span class="token operator">--</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+	<span class="token function">sleep</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">chart_print</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\nPriority: total waiting time = %d\n"</span><span class="token punctuation">,</span> total_wait_time<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Priority: avarage waiting time = %lf\n"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">float</span><span class="token punctuation">)</span>total_wait_time <span class="token operator">/</span> MAX_N<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n-----Priority scheduling-----\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>函数<code>Priority_scheduling</code>模拟优先级调度策略。SJF 是最短作业优先调度策略，也是隐含的优先级调度策略。在优先级调度策略的调度过程中，调度的标准从最短作业变成了优先级最高的作业，其他内容并无太大差异，这里不进行重复说明。</p>
+<p>下面对 mian 函数内容进行解释：<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token function">tasks_init</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>	<span class="token comment">//初始化任务列表</span>
+<span class="token function">tasks_print</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>	<span class="token comment">//打印当前任务列表</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre><br>首先对任务列表进行初始化，并将任务列表可视化地展示到控制台。</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>	<span class="token comment">//创建 MAX_N 个线程，分别对应 MAX_N 个任务</span>
+	ret <span class="token operator">=</span> <span class="token function">pthread_create</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>ptid<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> thread_work<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>thread_num<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">if</span><span class="token punctuation">(</span>ret <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+		<span class="token function">perror</span><span class="token punctuation">(</span><span class="token string">"pthread_create()"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>完成任务列表初始化后，创建<code>MAX_N</code>个线程，供调度器调度。</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//根据命令行参数选择调度策略</span>
+<span class="token keyword">if</span><span class="token punctuation">(</span>argc <span class="token operator">></span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span><span class="token function">strncmp</span><span class="token punctuation">(</span>argv<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token string">"sjf"</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token function">SJF_scheduling</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">else</span> <span class="token keyword">if</span><span class="token punctuation">(</span>argc <span class="token operator">></span> <span class="token number">1</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span><span class="token function">strncmp</span><span class="token punctuation">(</span>argv<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token string">"pri"</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token function">Priority_scheduling</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">else</span> <span class="token function">FCFS_scheduling</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<p>通过命令行参数，选择相关调度策略。默认的调度策略是先到先服务 FCFS 策略。</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>	<span class="token comment">//进行线程回收</span>
+	ret <span class="token operator">=</span> <span class="token function">pthread_join</span><span class="token punctuation">(</span>ptid<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token keyword">if</span><span class="token punctuation">(</span>ret <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+		<span class="token function">perror</span><span class="token punctuation">(</span><span class="token string">"pthread_join()"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>最后对结束运行的线程进行回收</p>
+<h2 id="四、结果分析"><a href="#四、结果分析" class="headerlink" title="四、结果分析"></a>四、结果分析</h2><blockquote>
+<p>FCFS策略</p>
+</blockquote>
+<p><img src="https://pic.rmb.bdstatic.com/bjh/fdd57def5719f3109b70132f7183e4b0.png" alt="1.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/fdd57def5719f3109b70132f7183e4b0.png" class="lozad post-image"><br><img src="https://pic.rmb.bdstatic.com/bjh/eb32bf8d229e54858d5e7234a5ec29e7.png" alt="2.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/eb32bf8d229e54858d5e7234a5ec29e7.png" class="lozad post-image"></p>
+<blockquote>
+<p>SJF 策略</p>
+</blockquote>
+<p><img src="https://pic.rmb.bdstatic.com/bjh/b6658ab36716e77ec455c7c298d62a16.png" alt="1.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/b6658ab36716e77ec455c7c298d62a16.png" class="lozad post-image"><br><img src="https://pic.rmb.bdstatic.com/bjh/0983af8ed21f72272fba14d821952c3c.png" alt="2.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/0983af8ed21f72272fba14d821952c3c.png" class="lozad post-image"></p>
+<blockquote>
+<p>Priority 策略</p>
+</blockquote>
+<p><img src="https://pic.rmb.bdstatic.com/bjh/ab58d8676b51a0581f09a09fe84e3f5e.png" alt="1.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/ab58d8676b51a0581f09a09fe84e3f5e.png" class="lozad post-image"><br><img src="https://pic.rmb.bdstatic.com/bjh/7bb9766a99956d76122dcec4676b2c6c.png" alt="2.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/7bb9766a99956d76122dcec4676b2c6c.png" class="lozad post-image"></p>
+
+  </div>
+  <div>
+  
+  <div class="post-note note-warning copyright" style="margin-top: 42px">
+    <p><span style="font-weight: bold;">作者：</span><a target="_blank" rel="nofollow noopener noreferrer" href="http://muo123.gitee.io/about">muo123</a></p>
+    <p><span style="font-weight: bold;">文章链接：</span><a target="_blank" rel="nofollow noopener noreferrer" href="http://muo123.gitee.io/2021/06/23/peterson/">http://muo123.gitee.io/2021/06/23/peterson/</a></p>
+    <p><span style="font-weight: bold;">版权声明：</span>本博客所有文章除特别声明外，均采用<a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0 协议</a>。转载请注明出处！</p>
+  </div>
+  
+  </div>
+</article>
+<div class="nav">
+  
+  
+  <div class="nav-item-next">
+    <a href="/2021/04/14/heart&amp;life/" class="nav-link">
+      <div>
+        <div class="nav-label">下一篇</div>
+        
+        <div class="nav-title">将心放在属于自己的时代 </div>
+        
+      </div>
+      <i class="iconfont icon-right nav-next-icon"></i>
+    </a>
+  </div>
+  
+</div>
+
+<div class="card card-content comment-card" style="margin-top: 16px;">
+  <div class="comment-card-title">评论</div>
+  
+  <div id="vcomments"></div>
+  
+  <script>
+    loadScript("//unpkg.com/valine/dist/Valine.min.js");
+    var oldLoadVa = window.onload;
+    window.onload = function () {
+      oldLoadVa && oldLoadVa();
+      new Valine({
+        el: '#vcomments',
+        appId: 'W5D2PsOTlwFzBQVD8LcVi2HH-gzGzoHsz',
+        appKey: 'CV4r2ngI9G9qIYz94DJLpb1s',
+        placeholder: '欢迎评论',
+        path: window.location.pathname,
+        avatar: 'mp',
+        meta: ["nick","mail","link"],
+        pageSize: '10',
+        lang: '',
+        visitor: 'false',
+        highlight: true,
+        recordIP: false,
+        
+        serverURLs: 'https://muo123.cn',
+        
+        
+        
+        enableQQ: 'false',
+        requiredFields: [],
+      });
+    };
+  </script>
+
+</div>
+
+<div class="card card-content toc-card" id="mobiletoc">
+  <div class="toc-header"><i class="iconfont icon-menu" style="padding-right: 2px;"></i>目录</div>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%86%85%E5%AE%B9%EF%BC%9ACPU-%E8%B0%83%E5%BA%A6%E3%80%82"><span class="toc-text">一、内容：CPU 调度。</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%8E%9F%E7%90%86"><span class="toc-text">二、原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%AE%BE%E8%AE%A1"><span class="toc-text">三、设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81FCFS-%E7%AD%96%E7%95%A5"><span class="toc-text">1、FCFS 策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E3%80%81SJF-%E7%AD%96%E7%95%A5"><span class="toc-text">2、SJF 策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%E3%80%81Priority-%E7%AD%96%E7%95%A5"><span class="toc-text">3、Priority 策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%BB%93%E6%9E%9C%E5%88%86%E6%9E%90"><span class="toc-text">四、结果分析</span></a></li></ol>
+</div></main>
+          <aside class="left-column">
+            
+            <div class="card card-author">
+              
+<img src="/img/cat.png" class="author-img">
+
+<p class="author-name">Muo123</p>
+<p class="author-description">Designed by muo123</p>
+<div class="author-message">
+  <a class="author-posts-count" href="/archives">
+    <span>10</span>
+    <span>文章</span>
+  </a>
+  <a class="author-categories-count" href="/categories">
+    <span>4</span>
+    <span>分类</span>
+  </a>
+  <a class="author-tags-count" href="/tags">
+    <span>1</span>
+    <span>标签</span>
+  </a>
+</div>
+
+<div class="author-card-society">
+  
+    <div class="author-card-society-icon">
+      <a href="mailto:xueguoliuming@qq.com">
+        <i class="iconfont icon-mail society-icon"></i>
+      </a>
+    </div>
+  
+    <div class="author-card-society-icon">
+      <a target="_blank" rel="noopener" href="https://space.bilibili.com/493881269">
+        <i class="iconfont icon-bilibili society-icon"></i>
+      </a>
+    </div>
+  
+    <div class="author-card-society-icon">
+      <a target="_blank" rel="noopener" href="https://github.com/muo123">
+        <i class="iconfont icon-github society-icon"></i>
+      </a>
+    </div>
+  
+</div>
+
+            </div>
+            
+            <div class="sticky-tablet">
+  
+  
+  <article class="display-when-two-columns spacer">
+    <div class="card card-content toc-card">
+      <div class="toc-header"><i class="iconfont icon-menu" style="padding-right: 2px;"></i>目录</div>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%86%85%E5%AE%B9%EF%BC%9ACPU-%E8%B0%83%E5%BA%A6%E3%80%82"><span class="toc-text">一、内容：CPU 调度。</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%8E%9F%E7%90%86"><span class="toc-text">二、原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%AE%BE%E8%AE%A1"><span class="toc-text">三、设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81FCFS-%E7%AD%96%E7%95%A5"><span class="toc-text">1、FCFS 策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E3%80%81SJF-%E7%AD%96%E7%95%A5"><span class="toc-text">2、SJF 策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%E3%80%81Priority-%E7%AD%96%E7%95%A5"><span class="toc-text">3、Priority 策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%BB%93%E6%9E%9C%E5%88%86%E6%9E%90"><span class="toc-text">四、结果分析</span></a></li></ol>
+    </div>
+  </article>
+  
+  
+  <article class="card card-content categories-widget">
+    <div class="categories-card">
+  <div class="categories-header"><i class="iconfont icon-fenlei" style="padding-right: 2px;"></i>分类</div>
+  <div class="categories-list">
+    
+      <a href="/categories/Hexo">
+        <div class="categories-list-item">
+          Hexo
+          <span class="categories-list-item-badge">2</span>
+        </div>
+      </a>
+    
+      <a href="/categories/Construct3">
+        <div class="categories-list-item">
+          Construct3
+          <span class="categories-list-item-badge">1</span>
+        </div>
+      </a>
+    
+      <a href="/categories/Idea">
+        <div class="categories-list-item">
+          Idea
+          <span class="categories-list-item-badge">4</span>
+        </div>
+      </a>
+    
+      <a href="/categories/Problems">
+        <div class="categories-list-item">
+          Problems
+          <span class="categories-list-item-badge">3</span>
+        </div>
+      </a>
+    
+  </div>
+</div>
+  </article>
+  
+  <article class="card card-content tags-widget">
+    <div class="tags-card">
+  <div class="tags-header"><i class="iconfont icon-biaoqian" style="padding-right: 2px;"></i>热门标签</div>
+  <div class="tags-list">
+    
+    <a href="\tags\C" title="C"><div class="tags-list-item">C</div></a>
+    
+  </div>
+</div>
+  </article>
+  
+  
+</div>
+          </aside>
+          <aside class="right-column">
+            <div class="sticky-widescreen">
+  
+  
+  <article class="card card-content toc-card">
+    <div class="toc-header"><i class="iconfont icon-menu" style="padding-right: 2px;"></i>目录</div>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%86%85%E5%AE%B9%EF%BC%9ACPU-%E8%B0%83%E5%BA%A6%E3%80%82"><span class="toc-text">一、内容：CPU 调度。</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%8E%9F%E7%90%86"><span class="toc-text">二、原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%AE%BE%E8%AE%A1"><span class="toc-text">三、设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81FCFS-%E7%AD%96%E7%95%A5"><span class="toc-text">1、FCFS 策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E3%80%81SJF-%E7%AD%96%E7%95%A5"><span class="toc-text">2、SJF 策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%E3%80%81Priority-%E7%AD%96%E7%95%A5"><span class="toc-text">3、Priority 策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%BB%93%E6%9E%9C%E5%88%86%E6%9E%90"><span class="toc-text">四、结果分析</span></a></li></ol>
+  </article>
+  
+  
+  <article class="card card-content">
+    <div class="recent-posts-card">
+  <div class="recent-posts-header"><i class="iconfont icon-wenzhang_huaban" style="padding-right: 2px;"></i>最近文章</div>
+  <div class="recent-posts-list">
+    
+      <div class="recent-posts-item">
+        <div class="recent-posts-item-title">2021-06-23</div>
+        <a href="/2021/06/23/peterson/"><div class="recent-posts-item-content">CPU 调度算法</div></a>
+      </div>
+    
+      <div class="recent-posts-item">
+        <div class="recent-posts-item-title">2021-04-14</div>
+        <a href="/2021/04/14/heart&amp;life/"><div class="recent-posts-item-content">将心放在属于自己的时代</div></a>
+      </div>
+    
+      <div class="recent-posts-item">
+        <div class="recent-posts-item-title">2021-03-23</div>
+        <a href="/2021/03/23/dfs&amp;gray/"><div class="recent-posts-item-content">使用DFS枚举格雷码</div></a>
+      </div>
+    
+      <div class="recent-posts-item">
+        <div class="recent-posts-item-title">2021-03-10</div>
+        <a href="/2021/03/10/calendar/"><div class="recent-posts-item-content">打印日历的C语言实现</div></a>
+      </div>
+    
+  </div>
+</div>
+  </article>
+  
+  
+</div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer class="footer">
+  <div class="footer-container">
+    <div>
+      <div class="footer-dsc">
+        <span>Copyright ©
+          
+          2020 -
+          
+          2021
+        </span>
+        &nbsp;
+        <a href="/" class="footer-link">Muo123's Blog </a>
+      </div>
+    </div>
+
+    
+    <div class="footer-dsc">
+      
+      Powered by
+      <a href="https://hexo.io/" class="footer-link" target="_blank" rel="nofollow noopener noreferrer">&nbsp;Hexo </a>
+      
+      
+      <span>&nbsp;|&nbsp;</span>
+      
+      
+      Theme -
+      <a href="https://github.com/theme-kaze" class="footer-link" target="_blank"
+        rel="nofollow noopener noreferrer">&nbsp;Kaze</a>
+      
+    </div>
+    
+    
+    
+    
+      <div class="footer-dsc">
+        
+        本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+        
+        <span>&nbsp;|&nbsp;</span>
+        
+        
+        本站总访客数<span id="busuanzi_value_site_uv"></span>次
+        
+      </div>
+      
+    
+</footer>
+  <a role="button" id="scrollbutton" class="basebutton" >
+  <i class="iconfont icon-arrowleft button-icon"></i>
+</a>
+<a role="button" id="menubutton" class="basebutton">
+  <i class="iconfont icon-menu button-icon"></i>
+</a>
+<a role="button" id="popbutton" class="basebutton">
+  <i class="iconfont icon-expand button-icon"></i>
+</a>
+<a role="button" id="darkbutton" class="basebutton darkwidget">
+  <i class="iconfont icon-weather button-icon"></i>
+</a>
+<a role="button" id="searchbutton" class="basebutton searchwidget">
+  <i class="iconfont icon-search button-icon"></i>
+</a>
+
+  
+  
+  
+
+  
+  
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        }
+      };
+    </script>
+    
+<script src="//cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-svg.js"></script>
+
+  
+
+  
+  
+  <script>
+  var addImgLayout = function () {
+    var img = document.querySelectorAll('.post-content img');
+    var i;
+    for (i = 0; i < img.length; i++) {
+      var wrapper = document.createElement('a');
+      wrapper.setAttribute('data-fslightbox', 'gallery');
+      wrapper.setAttribute('href', img[i].getAttribute('data-src'));
+      wrapper.style.cssText = 'width: 100%; display: flex; justify-content: center;';
+      img[i].before(wrapper);
+      wrapper.append(img[i]);
+    }
+    refreshFsLightbox();
+  }
+</script>
+<script>loadScript("//cdn.jsdelivr.net/npm/fslightbox@3.1.0/index.min.js", addImgLayout)</script>
+  
+  
+  
+<script src="/js/main.js"></script>
+
+  
+  <script>loadScript("/js/lib/busuanzi.min.js")</script>
+  
+  
+  <script>
+    var addLazyload = function () {
+      var observer = lozad('.lozad', {
+        load: function (el) {
+          el.srcset = el.getAttribute('data-src');
+        },
+        loaded: function (el) {
+          el.classList.add('loaded');
+        }
+      });
+      observer.observe();
+    }
+  </script>
+  <script>loadScript("/js/lib/lozad.min.js", addLazyload)</script>
+  
+  
+</body>
+
+</html>
