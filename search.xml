@@ -397,7 +397,7 @@ $ hexo d<span aria-hidden="true" class="line-numbers-rows"><span></span><span></
   <entry>
     <title>CPU 调度算法</title>
     <url>/2021/06/23/peterson/</url>
-    <content><![CDATA[<h2 id="一、内容：CPU-调度。"><a href="#一、内容：CPU-调度。" class="headerlink" title="一、内容：CPU 调度。"></a>一、内容：CPU 调度。</h2><ul>
+    <content><![CDATA[<h1 id="CPU-调度算法-FCFS-SJF-Priority"><a href="#CPU-调度算法-FCFS-SJF-Priority" class="headerlink" title="CPU 调度算法(FCFS / SJF / Priority)"></a>CPU 调度算法(FCFS / SJF / Priority)</h1><h2 id="一、内容：CPU-调度。"><a href="#一、内容：CPU-调度。" class="headerlink" title="一、内容：CPU 调度。"></a>一、内容：CPU 调度。</h2><ul>
 <li>尝试基于 POSIX API 设计一个简单调度器（不考虑资源竞争问题）：<ul>
 <li>创建一些 Pthread 线程任务，建立一个管理链队列，结点内容起码包括到达时间、WCT、优先级、调度状态（运行、就绪、阻塞）等调度参数；</li>
 <li>每个任务有一个调度信号量，任务启动后在其调度信号量上执行 wait；</li>
@@ -406,6 +406,7 @@ $ hexo d<span aria-hidden="true" class="line-numbers-rows"><span></span><span></
 </ul>
 </li>
 </ul>
+<p><img src="https://pic.rmb.bdstatic.com/bjh/301b2e11691e729f146d3b4487783221.png" alt srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/301b2e11691e729f146d3b4487783221.png" class="lozad post-image"></p>
 <h2 id="二、原理"><a href="#二、原理" class="headerlink" title="二、原理"></a>二、原理</h2><blockquote>
 <p>FCFS</p>
 </blockquote>
