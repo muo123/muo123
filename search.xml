@@ -834,4 +834,550 @@ $ hexo d<span aria-hidden="true" class="line-numbers-rows"><span></span><span></
         <tag>Pthread</tag>
       </tags>
   </entry>
+  <entry>
+    <title>虚拟内存管理：页置换算法</title>
+    <url>/2021/06/24/demandingPage/</url>
+    <content><![CDATA[<h1 id="虚拟内存管理：页置换算法（FIFO-LRU-Clock）"><a href="#虚拟内存管理：页置换算法（FIFO-LRU-Clock）" class="headerlink" title="虚拟内存管理：页置换算法（FIFO/LRU/Clock）"></a>虚拟内存管理：页置换算法（FIFO/LRU/Clock）</h1><h2 id="一、内容：虚拟内存管理"><a href="#一、内容：虚拟内存管理" class="headerlink" title="一、内容：虚拟内存管理"></a>一、内容：虚拟内存管理</h2><ul>
+<li>编写一个 C 程序模拟实现请求页面置换算法包括FIFO、LRU (stack and matrix implementation)、Second chance，并设计输入用例验证结果。</li>
+</ul>
+<h2 id="二、原理"><a href="#二、原理" class="headerlink" title="二、原理"></a>二、原理</h2><blockquote>
+<p>FIFO 页置换</p>
+</blockquote>
+<ul>
+<li>FIFO 页置换算法为每个记录着该页调入内存的时间。当必须置换一页时，将选择最旧的页。注意并不需要记录调入一页的确切时间。可以创建一个FIFO 队列来管理内存中的所有页。队列中的首页将被置换。当需要调入页时，将它加到队列的尾部</li>
+</ul>
+<blockquote>
+<p>LRU 页置换</p>
+</blockquote>
+<ul>
+<li>LRU 置换为每个页关联该页上次使用的时间。当必须置换一页时，LRU 选择最长时间没有使用的页。这种策略为向后看最优页置换算法。</li>
+</ul>
+<blockquote>
+<p>二次机会算法</p>
+</blockquote>
+<ul>
+<li>二次机会置换的基本算法是 FIFO 置换算法。当要选择一个页时，检查其引用位。如果其值为零，那么就置换该页。如果引用位为一，那么就给该页第二次机会，并选择下一个 FIFO 页。当一个页获得第二次机会时，其引用位清零，且其到达时间设为当前时间。因此，获得第二次机会的页在所有其他页置换之前，是不会被置换的，另外，如果一个页经常使用以致其引用位总是被设置，那么它就不会被置换。</li>
+</ul>
+<h2 id="三、代码实现"><a href="#三、代码实现" class="headerlink" title="三、代码实现"></a>三、代码实现</h2><h3 id="2-1、FIFO-页置换策略"><a href="#2-1、FIFO-页置换策略" class="headerlink" title="2.1、FIFO 页置换策略"></a>2.1、FIFO 页置换策略</h3><h4 id="a、FIFO第一种实现方案：buffer"><a href="#a、FIFO第一种实现方案：buffer" class="headerlink" title="a、FIFO第一种实现方案：buffer"></a>a、FIFO第一种实现方案：buffer</h4><p>首先定义FIFO策略的缓冲区如下：<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">BUFFER_SIZE</span> <span class="token expression"><span class="token number">3</span>   </span><span class="token comment">//FIFO 策略的缓冲区大小</span></span>
+
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token class-name">BUFFER</span> <span class="token punctuation">&#123;</span> <span class="token comment">//FIFO策略的缓冲区</span>
+    <span class="token keyword">int</span> page<span class="token punctuation">;</span>   <span class="token comment">//页号</span>
+    <span class="token keyword">int</span> count<span class="token punctuation">;</span>  <span class="token comment">//用于判断页面最先到达的计数器：越先到达的页面 count 越大</span>
+    <span class="token keyword">int</span> valid<span class="token punctuation">;</span>  <span class="token comment">//判断页面有效的位：1-有效，0-无效</span>
+<span class="token punctuation">&#125;</span> BUFFER<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><br>缓冲区单元包含储存的页<code>page</code>、记录页面到达时间的计数器<code>count</code>、判断当前页是否有效的标志<code>valid</code></p>
+<p>之后定义缓冲区的操作函数：</p>
+<ul>
+<li><code>buffer_init</code> 初始化缓冲区</li>
+<li><code>buffer_print</code> 打印缓冲区<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//FIFO缓冲区的初始化函数</span>
+<span class="token keyword">void</span> <span class="token function">buffer_init</span><span class="token punctuation">(</span>BUFFER <span class="token operator">*</span>buffer<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  
+    <span class="token function">memset</span><span class="token punctuation">(</span>buffer<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>BUFFER<span class="token punctuation">)</span>  <span class="token operator">*</span> BUFFER_SIZE<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//FIFO缓冲区的打印函数：page count valid</span>
+<span class="token keyword">void</span> <span class="token function">buffer_print</span><span class="token punctuation">(</span><span class="token keyword">const</span> BUFFER <span class="token operator">*</span>buffer<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>   
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"------------------\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Page  Count  Valid\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> BUFFER_SIZE<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%-7d %-7d %-7d\n"</span><span class="token punctuation">,</span> buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>page<span class="token punctuation">,</span> buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>count<span class="token punctuation">,</span> buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">.</span>valid<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"------------------\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+</ul>
+<p>之后根据FIFO策略编写代码：</p>
+<p>定义相关变量：命中的标志<code>hit</code>、缓冲区空位的标志<code>empty</code>、记录最大 count 值的临时变量<code>count</code>、记录最小到达页的下标<code>oldest</code>、记录缺页数的变量<code>page_fault</code>以及将要使用到的缓冲区<code>buffer</code>。<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">int</span> hit<span class="token punctuation">;</span>                <span class="token comment">//命中的标志</span>
+<span class="token keyword">int</span> empty<span class="token punctuation">;</span>              <span class="token comment">//缓冲区空位的标志</span>
+<span class="token keyword">int</span> count<span class="token punctuation">;</span>              <span class="token comment">//记录最大 count 值的临时变量</span>
+<span class="token keyword">int</span> oldest<span class="token punctuation">;</span>             <span class="token comment">//记录最小到达页的下标</span>
+<span class="token keyword">int</span> page_fault <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>     <span class="token comment">//缺页数</span>
+BUFFER buffer<span class="token punctuation">[</span>BUFFER_SIZE<span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+<span class="token function">buffer_init</span><span class="token punctuation">(</span>buffer<span class="token punctuation">)</span><span class="token punctuation">;</span>    <span class="token comment">//缓冲区初始化</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></p>
+<p>FIFO策略实现如下：<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token function">strlen</span><span class="token punctuation">(</span>string<span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>   <span class="token comment">//string 是输入字符串</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span>string<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">' '</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>          <span class="token comment">//如果当前输入为空格就跳过</span>
+
+    hit <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>    <span class="token comment">//初始化相关变量</span>
+    empty <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>  
+    count <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>  
+
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> BUFFER_SIZE<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  <span class="token comment">//判断当前页是否在缓冲区内，如果存在就将 hit 置位</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>buffer<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">.</span>page <span class="token operator">==</span> string<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token string">'0'</span> <span class="token operator">&amp;&amp;</span> buffer<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">.</span>valid<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            hit <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>hit<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  <span class="token comment">//如果没有命中</span>
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> k <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> k <span class="token operator">&lt;</span> BUFFER_SIZE<span class="token punctuation">;</span> k<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  
+            <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>buffer<span class="token punctuation">[</span>k<span class="token punctuation">]</span><span class="token punctuation">.</span>valid<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>          <span class="token comment">//如果当前缓冲区有空位，就填入新页</span>
+                empty <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                oldest <span class="token operator">=</span> k<span class="token punctuation">;</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">&#125;</span>
+
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> k <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token operator">!</span>empty <span class="token operator">&amp;&amp;</span> k <span class="token operator">&lt;</span> BUFFER_SIZE<span class="token punctuation">;</span> k<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span>buffer<span class="token punctuation">[</span>k<span class="token punctuation">]</span><span class="token punctuation">.</span>count <span class="token operator">></span> count<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>   <span class="token comment">//如果缓冲区已满，选择最大 count 值的页进行置换</span>
+                count <span class="token operator">=</span> buffer<span class="token punctuation">[</span>k<span class="token punctuation">]</span><span class="token punctuation">.</span>count<span class="token punctuation">;</span>
+                oldest <span class="token operator">=</span> k<span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">&#125;</span>
+
+        buffer<span class="token punctuation">[</span>oldest<span class="token punctuation">]</span><span class="token punctuation">.</span>page <span class="token operator">=</span> string<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">;</span>  <span class="token comment">//页面导入、有效位置位、count值赋值</span>
+        buffer<span class="token punctuation">[</span>oldest<span class="token punctuation">]</span><span class="token punctuation">.</span>valid <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        buffer<span class="token punctuation">[</span>oldest<span class="token punctuation">]</span><span class="token punctuation">.</span>count <span class="token operator">=</span> MAX <span class="token operator">-</span> i<span class="token punctuation">;</span>
+        
+        page_fault <span class="token operator">++</span><span class="token punctuation">;</span>  <span class="token comment">//没有命中，缺页数加一</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token comment">// buffer_print(buffer);   //每个页号（string[i]）到达后的结果</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><br><code>string</code>为输入字符串，我们需要先跳过无效的空格输入，再进行页置换，具体算法：</p>
+<ul>
+<li>第一步，判断输入的页是否在缓冲区内，如果存在，说明页被命中，继续下一次输入页判定；否则，转到第二步</li>
+<li>第二步，页未命中，说明发生缺页（缺页数加一）。如果当前缓冲区内还有未填满的单元，就将新页填入；如果缓冲区已满，选择到达最早的页，即 count 值最大的页进行置换</li>
+<li>第三步，循环第一、二步直至输入终止</li>
+</ul>
+<p>测试用例：<br><img src="https://pic.rmb.bdstatic.com/bjh/85c1288b1ccf405ee3021a682b84d896.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/85c1288b1ccf405ee3021a682b84d896.png" class="lozad post-image"></p>
+<p>测试结果如下：<br><img src="https://pic.rmb.bdstatic.com/bjh/3777c4794dde587c36038e84ba6131b0.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/3777c4794dde587c36038e84ba6131b0.png" class="lozad post-image"><br><img src="https://pic.rmb.bdstatic.com/bjh/28d70d0294b93dfc574a5c0be2293fa8.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/28d70d0294b93dfc574a5c0be2293fa8.png" class="lozad post-image"><br><img src="https://pic.rmb.bdstatic.com/bjh/34ab1a84a1409d50a90de1b8149f7f4c.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/34ab1a84a1409d50a90de1b8149f7f4c.png" class="lozad post-image"><br><img src="https://pic.rmb.bdstatic.com/bjh/ceae0e669211bd2b9b1d58d736c89758.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/ceae0e669211bd2b9b1d58d736c89758.png" class="lozad post-image"></p>
+<h4 id="b、FIFO第二种实现方案：queue"><a href="#b、FIFO第二种实现方案：queue" class="headerlink" title="b、FIFO第二种实现方案：queue"></a>b、FIFO第二种实现方案：queue</h4><p>第一种方案中的FIFO策略实现部分虽然达到预期效果，但显得非常冗杂，且实现方式未采用队列，下面使用队列方式进行重新实现</p>
+<p>首先定义队列结构：<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">QUEUE_SIZE</span> <span class="token expression"><span class="token number">3</span>    </span><span class="token comment">//FIFO 策略队列的缓冲区大小</span></span>
+
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token class-name">QUEUE</span> <span class="token punctuation">&#123;</span>  <span class="token comment">//队列</span>
+    <span class="token keyword">int</span> front<span class="token punctuation">;</span>              <span class="token comment">//队列首指针</span>
+    <span class="token keyword">int</span> rear<span class="token punctuation">;</span>               <span class="token comment">//队列尾指针</span>
+    <span class="token keyword">int</span> size<span class="token punctuation">;</span>               <span class="token comment">//队列大小</span>
+    <span class="token keyword">int</span> buffer<span class="token punctuation">[</span>QUEUE_SIZE<span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">//队列的缓冲区</span>
+<span class="token punctuation">&#125;</span> QUEUE<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><br>队列包含队首指针<code>front</code>、队尾指针<code>rear</code>、队列大小<code>size</code>和用来储存页的队列缓冲区<code>buffer</code>。</p>
+<p>之后完成队列操作函数的定义：</p>
+<ul>
+<li><code>queue_init</code>    队列初始化函数</li>
+<li><code>queue_empty</code>   队列判空函数</li>
+<li><code>queue_full</code>    队列判满函数</li>
+<li><code>enqueue</code>      入队函数</li>
+<li><code>dequeue</code>       出队函数</li>
+<li><code>queue_find</code>   队列查找函数</li>
+<li><code>queue_print</code>   队列打印函数</li>
+</ul>
+<p>相关函数实现如下：<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//队列的初始化函数</span>
+<span class="token keyword">void</span> <span class="token function">queue_init</span><span class="token punctuation">(</span>QUEUE <span class="token operator">*</span>queue<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    queue<span class="token operator">-></span>front <span class="token operator">=</span> queue<span class="token operator">-></span>rear <span class="token operator">=</span> queue<span class="token operator">-></span>size <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> QUEUE_SIZE<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        queue<span class="token operator">-></span>buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//判断队列为空的函数</span>
+<span class="token keyword">int</span> <span class="token function">queue_empty</span><span class="token punctuation">(</span><span class="token keyword">const</span> QUEUE queue<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span> queue<span class="token punctuation">.</span>size <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//判断队列为满的函数</span>
+<span class="token keyword">int</span> <span class="token function">queue_full</span><span class="token punctuation">(</span><span class="token keyword">const</span> QUEUE queue<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span> queue<span class="token punctuation">.</span>size <span class="token operator">==</span> QUEUE_SIZE<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//入队函数</span>
+<span class="token keyword">int</span> <span class="token function">enqueue</span><span class="token punctuation">(</span>QUEUE <span class="token operator">*</span>queue<span class="token punctuation">,</span> <span class="token keyword">int</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">queue_full</span><span class="token punctuation">(</span><span class="token operator">*</span>queue<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    queue<span class="token operator">-></span>buffer<span class="token punctuation">[</span>queue<span class="token operator">-></span>rear<span class="token punctuation">]</span> <span class="token operator">=</span> e<span class="token punctuation">;</span>
+    queue<span class="token operator">-></span>rear <span class="token operator">=</span> <span class="token punctuation">(</span>queue<span class="token operator">-></span>rear <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">%</span> QUEUE_SIZE<span class="token punctuation">;</span>
+    queue<span class="token operator">-></span>size <span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//出队函数</span>
+<span class="token keyword">int</span> <span class="token function">dequeue</span><span class="token punctuation">(</span>QUEUE <span class="token operator">*</span>queue<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span>e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">queue_empty</span><span class="token punctuation">(</span><span class="token operator">*</span>queue<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token operator">*</span>e <span class="token operator">=</span> queue<span class="token operator">-></span>buffer<span class="token punctuation">[</span>queue<span class="token operator">-></span>front<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    queue<span class="token operator">-></span>front <span class="token operator">=</span> <span class="token punctuation">(</span>queue<span class="token operator">-></span>front <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">%</span> QUEUE_SIZE<span class="token punctuation">;</span>
+    queue<span class="token operator">-></span>size <span class="token operator">--</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//队列的寻找指定数值的函数</span>
+<span class="token keyword">int</span> <span class="token function">queue_find</span><span class="token punctuation">(</span><span class="token keyword">const</span> QUEUE queue<span class="token punctuation">,</span> <span class="token keyword">int</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> QUEUE_SIZE<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>queue<span class="token punctuation">.</span>buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> e<span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//队列的打印函数</span>
+<span class="token keyword">void</span> <span class="token function">queue_print</span><span class="token punctuation">(</span><span class="token keyword">const</span> QUEUE queue<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"--------------\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> QUEUE_SIZE<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"buffer[%d]: %d\n"</span><span class="token punctuation">,</span> i<span class="token punctuation">,</span> queue<span class="token punctuation">.</span>buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"--------------\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></p>
+<p>完成队列的相关 API 后，FIFO策略实现如下：<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//FIFO 策略</span>
+<span class="token keyword">void</span> <span class="token function">FIFO</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span>string<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    QUEUE queue<span class="token punctuation">;</span>        
+    <span class="token keyword">int</span> page_fault <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token comment">//记录缺页数的变量</span>
+
+    <span class="token function">queue_init</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>queue<span class="token punctuation">)</span><span class="token punctuation">;</span>     <span class="token comment">//初始化队列</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\nFIFO >> reference string:\n%s\n"</span><span class="token punctuation">,</span> string<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token function">strlen</span><span class="token punctuation">(</span>string<span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>   <span class="token comment">//string 是输入字符串</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>string<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">' '</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>          <span class="token comment">//如果当前输入为空格就跳过</span>
+
+        <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">queue_find</span><span class="token punctuation">(</span>queue<span class="token punctuation">,</span> string<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>   <span class="token comment">//如果当前队列不存在输入页</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">queue_full</span><span class="token punctuation">(</span>queue<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>                    <span class="token comment">//如果队列未满</span>
+                <span class="token function">enqueue</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>queue<span class="token punctuation">,</span> string<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>           <span class="token comment">//将新页填入队列</span>
+            <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>                                    <span class="token comment">//如果队列已满</span>
+                queue<span class="token punctuation">.</span>buffer<span class="token punctuation">[</span>queue<span class="token punctuation">.</span>front<span class="token punctuation">]</span> <span class="token operator">=</span> string<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">;</span>    <span class="token comment">//将队首的页置换</span>
+                queue<span class="token punctuation">.</span>front <span class="token operator">=</span> <span class="token punctuation">(</span>queue<span class="token punctuation">.</span>front <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">%</span> QUEUE_SIZE<span class="token punctuation">;</span>   <span class="token comment">//队首和队尾向前推进</span>
+                queue<span class="token punctuation">.</span>rear <span class="token operator">=</span> <span class="token punctuation">(</span>queue<span class="token punctuation">.</span>rear <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">%</span> QUEUE_SIZE<span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+            page_fault<span class="token operator">++</span><span class="token punctuation">;</span>   <span class="token comment">//缺页数加一</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token comment">// queue_print(queue);  //每个页号（string[i]）到达后的结果</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"FIFO >> Final Result:\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">queue_print</span><span class="token punctuation">(</span>queue<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"FIFO >> Page Faults = %d\n"</span><span class="token punctuation">,</span> page_fault<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><br>整体逻辑与第一种实现方案大致相同，但整体有所简化，具体流程如注释</p>
+<p>测试用例：<br><img src="https://pic.rmb.bdstatic.com/bjh/85c1288b1ccf405ee3021a682b84d896.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/85c1288b1ccf405ee3021a682b84d896.png" class="lozad post-image"></p>
+<p>测试结果如下：<br><img src="https://pic.rmb.bdstatic.com/bjh/5c952b823a623ce383030c687d7a2111.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/5c952b823a623ce383030c687d7a2111.png" class="lozad post-image"><br><img src="https://pic.rmb.bdstatic.com/bjh/16170037b0c3ea2e8280d7f25640a604.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/16170037b0c3ea2e8280d7f25640a604.png" class="lozad post-image"><br><img src="https://pic.rmb.bdstatic.com/bjh/f5ffbcda96c1e6cdcc04415da60e178b.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/f5ffbcda96c1e6cdcc04415da60e178b.png" class="lozad post-image"></p>
+<h3 id="2-2、LRU-页置换策略"><a href="#2-2、LRU-页置换策略" class="headerlink" title="2.2、LRU 页置换策略"></a>2.2、LRU 页置换策略</h3><h4 id="a、LRU第一种实现方案：stack"><a href="#a、LRU第一种实现方案：stack" class="headerlink" title="a、LRU第一种实现方案：stack"></a>a、LRU第一种实现方案：stack</h4><p>首先对栈结构体进行定义：<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">STACK_SIZE</span> <span class="token expression"><span class="token number">3</span>    </span><span class="token comment">//LRU 策略栈的缓冲区大小</span></span>
+
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token class-name">STACK</span> <span class="token punctuation">&#123;</span>  <span class="token comment">//栈</span>
+    <span class="token keyword">int</span> top<span class="token punctuation">;</span>                    <span class="token comment">//栈顶指针</span>
+    <span class="token keyword">int</span> buffer<span class="token punctuation">[</span>STACK_SIZE<span class="token punctuation">]</span><span class="token punctuation">;</span>     <span class="token comment">//栈的缓冲区</span>
+<span class="token punctuation">&#125;</span> STACK<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><br>结构体中包含两个成员变量：栈顶指针<code>top</code>以及用来储存页的缓冲区<code>buffer</code></p>
+<p>接下来完成栈的操作函数：</p>
+<ul>
+<li><code>stack_init</code> 栈的初始化函数</li>
+<li><code>stack_prin</code> 栈的打印函数</li>
+<li><code>stack_empt</code> 判断栈空</li>
+<li><code>stack_full</code> 判断栈满</li>
+<li><code>stack_pull</code> 入栈函数</li>
+<li><code>stack_pop</code> 出栈函数</li>
+<li><code>stack_find</code> 栈的查找函数</li>
+<li><code>stack_move</code> 栈的移动函数</li>
+</ul>
+<p>具体实现如下：<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//栈的初始化函数</span>
+<span class="token keyword">void</span> <span class="token function">stack_init</span><span class="token punctuation">(</span>STACK <span class="token operator">*</span>stack<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    stack<span class="token operator">-></span>top <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> STACK_SIZE<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> stack<span class="token operator">-></span>buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span> 
+
+<span class="token comment">//栈的打印函数</span>
+<span class="token keyword">void</span> <span class="token function">stack_print</span><span class="token punctuation">(</span><span class="token keyword">const</span> STACK stack<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"----------\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> STACK_SIZE<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"buffer-%d: %d\n"</span><span class="token punctuation">,</span> i<span class="token punctuation">,</span> stack<span class="token punctuation">.</span>buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"----------\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//判断栈空的函数</span>
+<span class="token keyword">int</span> <span class="token function">stack_empty</span><span class="token punctuation">(</span><span class="token keyword">const</span> STACK stack<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span> stack<span class="token punctuation">.</span>top <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//判断栈满的函数</span>
+<span class="token keyword">int</span> <span class="token function">stack_full</span><span class="token punctuation">(</span><span class="token keyword">const</span> STACK stack<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span> stack<span class="token punctuation">.</span>top <span class="token operator">==</span> STACK_SIZE<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//入栈函数</span>
+<span class="token keyword">int</span> <span class="token function">stack_push</span><span class="token punctuation">(</span>STACK <span class="token operator">*</span>stack<span class="token punctuation">,</span> <span class="token keyword">int</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">stack_full</span><span class="token punctuation">(</span><span class="token operator">*</span>stack<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    stack<span class="token operator">-></span>buffer<span class="token punctuation">[</span>stack<span class="token operator">-></span>top<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> e<span class="token punctuation">;</span>  
+    <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>  
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//出栈函数</span>
+<span class="token keyword">int</span> <span class="token function">stack_pop</span><span class="token punctuation">(</span>STACK <span class="token operator">*</span>stack<span class="token punctuation">,</span> <span class="token keyword">int</span> <span class="token operator">*</span>e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">stack_empty</span><span class="token punctuation">(</span><span class="token operator">*</span>stack<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token operator">*</span>e <span class="token operator">=</span> stack<span class="token operator">-></span>buffer<span class="token punctuation">[</span>stack<span class="token operator">-></span>top<span class="token operator">--</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//栈的寻找指定数值的函数</span>
+<span class="token keyword">int</span> <span class="token function">stack_find</span><span class="token punctuation">(</span><span class="token keyword">const</span> STACK stack<span class="token punctuation">,</span> <span class="token keyword">int</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> stack<span class="token punctuation">.</span>top<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>stack<span class="token punctuation">.</span>buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> e<span class="token punctuation">)</span> <span class="token keyword">return</span> i<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">return</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//栈的移动函数：pos 后面的数全部向前移动一位，并将 e 放到栈顶</span>
+<span class="token keyword">void</span> <span class="token function">stack_move</span><span class="token punctuation">(</span>STACK <span class="token operator">*</span>stack<span class="token punctuation">,</span> <span class="token keyword">int</span> pos<span class="token punctuation">,</span> <span class="token keyword">int</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> pos<span class="token punctuation">;</span> i <span class="token operator">&lt;</span> stack<span class="token operator">-></span>top<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        stack<span class="token operator">-></span>buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> stack<span class="token operator">-></span>buffer<span class="token punctuation">[</span>i<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    stack<span class="token operator">-></span>buffer<span class="token punctuation">[</span>stack<span class="token operator">-></span>top <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> e<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><br>以上函数需要注意的是<code>stack_move</code>，属于自定义的额外操作函数，它的作用是将指定位置的数都向前移动一位，并将指定数值赋压入栈顶。</p>
+<p>之后根据 LRU 策略完成栈实现：<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span> <span class="token function">LRU_stack</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span>string<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> hit_num<span class="token punctuation">;</span>    <span class="token comment">//记录命中页的下标</span>
+    STACK stack<span class="token punctuation">;</span>    
+    <span class="token keyword">int</span> page_fault <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token function">stack_init</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>stack<span class="token punctuation">)</span><span class="token punctuation">;</span>     <span class="token comment">//初始化栈</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\nLRU stack >> reference string:\n%s\n"</span><span class="token punctuation">,</span> string<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token function">strlen</span><span class="token punctuation">(</span>string<span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>string<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">' '</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+
+        hit_num <span class="token operator">=</span> <span class="token function">stack_find</span><span class="token punctuation">(</span>stack<span class="token punctuation">,</span> string<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>   <span class="token comment">//搜索栈中是否存在指定页</span>
+        
+        <span class="token keyword">if</span><span class="token punctuation">(</span>hit_num <span class="token operator">>=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>                   <span class="token comment">//如果存在</span>
+            <span class="token keyword">int</span> temp <span class="token operator">=</span> stack<span class="token punctuation">.</span>buffer<span class="token punctuation">[</span>hit_num<span class="token punctuation">]</span><span class="token punctuation">;</span>   <span class="token comment">//将该页放到栈顶</span>
+            <span class="token function">stack_move</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>stack<span class="token punctuation">,</span> hit_num<span class="token punctuation">,</span> temp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>                             <span class="token comment">//如果不存在</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">stack_full</span><span class="token punctuation">(</span>stack<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>                <span class="token comment">//如果栈已满</span>
+                <span class="token function">stack_push</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>stack<span class="token punctuation">,</span> string<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>    <span class="token comment">//将该页放到栈底</span>
+            <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>                                <span class="token comment">//否则</span>
+                <span class="token function">stack_move</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>stack<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> string<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//将该页放到栈顶</span>
+            <span class="token punctuation">&#125;</span>
+            page_fault<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token comment">// stack_print(stack);   //每个页号（string[i]）到达后的结果</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"LRU stack >> final result:\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">stack_print</span><span class="token punctuation">(</span>stack<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"LRU stack >> page faults = %d\n"</span><span class="token punctuation">,</span> page_fault<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><br>栈实现的 LRU 策略算法流程如下：</p>
+<ul>
+<li>第一步，搜索当前栈中是否存在相关页，如果存在，就将该页放到栈顶；否则转到第二步</li>
+<li>第二步，栈中不存在相关页，说明发生缺页。如果栈中还有位置，就将该页入栈；不然，就将该页与栈底的页进行置换，并将该页放到栈顶</li>
+<li>第三步，重复第一、二步直至输入终止</li>
+</ul>
+<p>测试用例：<br><img src="https://pic.rmb.bdstatic.com/bjh/b9aeaffaf462348598e500d2e45df6bc.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/b9aeaffaf462348598e500d2e45df6bc.png" class="lozad post-image"></p>
+<p>测试结果：<br><img src="https://pic.rmb.bdstatic.com/bjh/0e78caf33e26b6927c2fbd07b446ece7.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/0e78caf33e26b6927c2fbd07b446ece7.png" class="lozad post-image"><br><img src="https://pic.rmb.bdstatic.com/bjh/efb3dab4ced359e4f3b332a8798a9baa.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/efb3dab4ced359e4f3b332a8798a9baa.png" class="lozad post-image"><br><img src="https://pic.rmb.bdstatic.com/bjh/db99d87c11c73915eeacf7f2d985817c.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/db99d87c11c73915eeacf7f2d985817c.png" class="lozad post-image"></p>
+<h4 id="b、LRU第二种实现方案：matrix"><a href="#b、LRU第二种实现方案：matrix" class="headerlink" title="b、LRU第二种实现方案：matrix"></a>b、LRU第二种实现方案：matrix</h4><p>对矩阵结构体进行定义：<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MATRIX_SIZE</span> <span class="token expression"><span class="token number">4</span>   </span><span class="token comment">//LRU 策略矩阵缓冲区大小</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX_N</span> <span class="token expression"><span class="token number">10</span>        </span><span class="token comment">//LRU 策略矩阵的大小</span></span>
+
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token class-name">MATRIX</span> <span class="token punctuation">&#123;</span> <span class="token comment">//矩阵</span>
+    <span class="token keyword">int</span> size<span class="token punctuation">;</span>                   <span class="token comment">//当前页的数量</span>
+    <span class="token keyword">int</span> buffer<span class="token punctuation">[</span>MATRIX_SIZE<span class="token punctuation">]</span><span class="token punctuation">;</span>    <span class="token comment">//矩阵缓冲区</span>
+    <span class="token keyword">int</span> m<span class="token punctuation">[</span>MAX_N<span class="token punctuation">]</span><span class="token punctuation">[</span>MAX_N<span class="token punctuation">]</span><span class="token punctuation">;</span>        <span class="token comment">//用于置换页的矩阵</span>
+<span class="token punctuation">&#125;</span> MATRIX<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><br>结构体中包含存储页的缓冲区<code>buffer</code>，记录当前页数量的变量<code>size</code>以及用于计算最不常用页的辅助矩阵<code>m</code></p>
+<p>矩阵的操作函数如下：</p>
+<ul>
+<li><code>matrix_init</code> 矩阵的初始化函数</li>
+<li><code>matrix_print</code> 矩阵的打印函数</li>
+<li><code>matrix_find</code> 矩阵的查找函数</li>
+<li><code>matrix_smallest_row</code> 矩阵的寻找最小行函数</li>
+<li><code>matrix_set</code> 矩阵的置位函数</li>
+</ul>
+<p>具体实现如下所示：<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//矩阵的初始化函数</span>
+<span class="token keyword">void</span> <span class="token function">matrix_init</span><span class="token punctuation">(</span>MATRIX <span class="token operator">*</span>matrix<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    matrix<span class="token operator">-></span>size <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MATRIX_SIZE<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> matrix<span class="token operator">-></span>buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> matrix<span class="token operator">-></span>m<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+
+<span class="token comment">//矩阵的打印函数</span>
+<span class="token keyword">void</span> <span class="token function">matrix_print</span><span class="token punctuation">(</span><span class="token keyword">const</span> MATRIX matrix<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"--------------\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"page  matrix\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> MATRIX_SIZE<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">int</span> page <span class="token operator">=</span> matrix<span class="token punctuation">.</span>buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">?</span> i <span class="token operator">:</span> matrix<span class="token punctuation">.</span>buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%-6d"</span><span class="token punctuation">,</span> matrix<span class="token punctuation">.</span>buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%d "</span><span class="token punctuation">,</span> matrix<span class="token punctuation">.</span>m<span class="token punctuation">[</span>page<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"--------------\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//矩阵的查找函数：返回存储 page 的 buffer 下标值</span>
+<span class="token keyword">int</span> <span class="token function">matrix_find</span><span class="token punctuation">(</span><span class="token keyword">const</span> MATRIX matrix<span class="token punctuation">,</span> <span class="token keyword">int</span> page<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> matrix<span class="token punctuation">.</span>size<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>matrix<span class="token punctuation">.</span>buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> page<span class="token punctuation">)</span> <span class="token keyword">return</span> i<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">return</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//矩阵的寻找最小行函数：返回矩阵中最小行</span>
+<span class="token keyword">int</span> <span class="token function">matrix_smallest_row</span><span class="token punctuation">(</span><span class="token keyword">const</span> MATRIX matrix<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> smallest <span class="token operator">=</span> MAX_N<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> smallest_row <span class="token operator">=</span> MAX_N<span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> MATRIX_SIZE<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">int</span> temp <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> page <span class="token operator">=</span> matrix<span class="token punctuation">.</span>buffer<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> k <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> k <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> k<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            temp <span class="token operator">+=</span> matrix<span class="token punctuation">.</span>m<span class="token punctuation">[</span>page<span class="token punctuation">]</span><span class="token punctuation">[</span>k<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>smallest <span class="token operator">></span> temp<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            smallest <span class="token operator">=</span> temp<span class="token punctuation">;</span>
+            smallest_row <span class="token operator">=</span> j<span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">return</span> smallest_row<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//矩阵的设置数值函数：将 page 行置位，page 列清零</span>
+<span class="token keyword">void</span> <span class="token function">matrix_set</span><span class="token punctuation">(</span>MATRIX <span class="token operator">*</span>matrix<span class="token punctuation">,</span> <span class="token keyword">int</span> page<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">&lt;</span> MAX_N<span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        matrix<span class="token operator">-></span>m<span class="token punctuation">[</span>page<span class="token punctuation">]</span><span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        matrix<span class="token operator">-></span>m<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">[</span>page<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><br>需要进行解释的是矩阵的寻找最小行函数和设置数值函数：<code>matrix_smallest_row</code>函数遍历矩阵寻找最小行，并将最小行的行号返回；而<code>matrix_set</code>是将指定的行元素全部置为 1，将指定的列元素全部置为 0.</p>
+<p>LRU 策略的矩阵实现结果如下：<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//LRU 策略的矩阵实现</span>
+<span class="token keyword">void</span> <span class="token function">LRU_matrix</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span>string<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> smallest_row<span class="token punctuation">;</span>   <span class="token comment">//记录最小行的变量</span>
+    MATRIX matrix<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> page_fault <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    
+    <span class="token function">matrix_init</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>matrix<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\nLRU matrix >> reference string:\n%s\n"</span><span class="token punctuation">,</span> string<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token function">strlen</span><span class="token punctuation">(</span>string<span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>string<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">' '</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">int</span> page <span class="token operator">=</span> string<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">matrix_find</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> page<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>       <span class="token comment">//如果在缓冲区中没有找到对应页</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span>matrix<span class="token punctuation">.</span>size <span class="token operator">!=</span> MATRIX_SIZE<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>            <span class="token comment">//如果当前缓冲区未满</span>
+                matrix<span class="token punctuation">.</span>buffer<span class="token punctuation">[</span>matrix<span class="token punctuation">.</span>size<span class="token operator">++</span><span class="token punctuation">]</span> <span class="token operator">=</span> page<span class="token punctuation">;</span>        <span class="token comment">//将新页加入</span>
+            <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>                                    <span class="token comment">//否则</span>
+                smallest_row <span class="token operator">=</span> <span class="token function">matrix_smallest_row</span><span class="token punctuation">(</span>matrix<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//选择最小行的页进行置换</span>
+                matrix<span class="token punctuation">.</span>buffer<span class="token punctuation">[</span><span class="token function">matrix_find</span><span class="token punctuation">(</span>matrix<span class="token punctuation">,</span> smallest_row<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">=</span> page<span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+            page_fault<span class="token operator">++</span><span class="token punctuation">;</span>   
+        <span class="token punctuation">&#125;</span>
+        <span class="token function">matrix_set</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>matrix<span class="token punctuation">,</span> page<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">//设置 page 的行值和列值</span>
+        <span class="token comment">// matrix_print(matrix);   //每个页号（string[i]）到达后的结果</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"LRU matrix >> final result:\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">matrix_print</span><span class="token punctuation">(</span>matrix<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"LRU matrix >> page fault = %d\n"</span><span class="token punctuation">,</span> page_fault<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><br>无论是否找到页，都需要将矩阵的指定行和指定列进行置位。</p>
+<p>如果没有找到输入的页，根据当前缓冲区是否已满，来决定是否直接插入新页；如果缓冲区已满，就将矩阵中行值最小的页进行置换。</p>
+<p>测试用例：<br> 0, 1, 2, 3, 2, 1, 0, 3, 2, 3.<br><img src="https://pic.rmb.bdstatic.com/bjh/c7e82ad497dcbcf7c53c5824def6403d.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/c7e82ad497dcbcf7c53c5824def6403d.png" class="lozad post-image"></p>
+<p>测试结果如下：</p>
+<p><img src="https://pic.rmb.bdstatic.com/bjh/206778992ca3b0f2b92bb700fc889a16.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/206778992ca3b0f2b92bb700fc889a16.png" class="lozad post-image"><br><img src="https://pic.rmb.bdstatic.com/bjh/de75d1fe4944c3a7c895d70309c64d63.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/de75d1fe4944c3a7c895d70309c64d63.png" class="lozad post-image"></p>
+<h3 id="2-3、Second-Chance-页置换策略：Clock"><a href="#2-3、Second-Chance-页置换策略：Clock" class="headerlink" title="2.3、Second Chance 页置换策略：Clock"></a>2.3、Second Chance 页置换策略：Clock</h3><p>第二次机会页置换算法使用循环队列实现，定义的 Clock 结构体如下所示：</p>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">CLOCK_SIZE</span> <span class="token expression"><span class="token number">3</span>    </span><span class="token comment">//Clock 策略的缓冲区大小</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">MAX</span> <span class="token expression"><span class="token number">99</span>          </span><span class="token comment">//所定义的最大数</span></span>
+
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token class-name">CLOCK</span> <span class="token punctuation">&#123;</span>  <span class="token comment">//时钟</span>
+    <span class="token keyword">int</span> pointer<span class="token punctuation">;</span>    <span class="token comment">//时钟的指针</span>
+    <span class="token keyword">int</span> used<span class="token punctuation">[</span>CLOCK_SIZE<span class="token punctuation">]</span><span class="token punctuation">;</span>    <span class="token comment">//判断当前位被使用的标志</span>
+    <span class="token keyword">int</span> buffer<span class="token punctuation">[</span>CLOCK_SIZE<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">//储存页的缓冲区</span>
+<span class="token punctuation">&#125;</span> CLOCK<span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>包含时钟的指针<code>pointer</code>，使用标志数组<code>used</code>以及储存页的缓冲区<code>buffer</code></p>
+<p>clock 的操作函数有：</p>
+<ul>
+<li><code>clock_init</code> clock 的初始化函数</li>
+<li><code>clock_print</code> clock 的打印函数</li>
+<li><code>clock_sum</code> clock 的求和函数</li>
+</ul>
+<p>实现结果如下：<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//clock 的初始化函数</span>
+<span class="token keyword">void</span> <span class="token function">clock_init</span><span class="token punctuation">(</span>CLOCK <span class="token operator">*</span>clock<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    clock<span class="token operator">-></span>pointer <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> CLOCK_SIZE<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        clock<span class="token operator">-></span>buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+        clock<span class="token operator">-></span>used<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>   
+
+<span class="token comment">//clock 的打印函数：buffer page used（块索引 页号 页使用标志）</span>
+<span class="token keyword">void</span> <span class="token function">clock_print</span><span class="token punctuation">(</span><span class="token keyword">const</span> CLOCK clock<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"----------------\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Buffer Page Used\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> CLOCK_SIZE<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%-6d %-6d %-6d\n"</span><span class="token punctuation">,</span> i<span class="token punctuation">,</span> clock<span class="token punctuation">.</span>buffer<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> clock<span class="token punctuation">.</span>used<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"----------------\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//clock 的求和函数：计算使用位 used 的和</span>
+<span class="token keyword">int</span> <span class="token function">clock_sum</span><span class="token punctuation">(</span><span class="token keyword">const</span> CLOCK clock<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> sum <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> CLOCK_SIZE<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        sum <span class="token operator">+=</span> clock<span class="token punctuation">.</span>used<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">return</span> sum<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></p>
+<p>根据 Second chance 策略实现算法如下：<br><pre class="line-numbers language-c" data-language="c"><code class="language-c"><span class="token comment">//Clock 策略</span>
+<span class="token keyword">void</span> <span class="token function">Clock</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span>string<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    CLOCK clock<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> hit<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> circular_flag <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>  <span class="token comment">//时钟循环的标志</span>
+    <span class="token keyword">int</span> page_fault <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token function">clock_init</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>clock<span class="token punctuation">)</span><span class="token punctuation">;</span>     <span class="token comment">//初始化clock</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\nClock >> reference string:\n%s\n"</span><span class="token punctuation">,</span> string<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token function">strlen</span><span class="token punctuation">(</span>string<span class="token punctuation">)</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>string<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">' '</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            hit <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+            <span class="token keyword">while</span> <span class="token punctuation">(</span>circular_flag <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token comment">//如果循环标志大于零，说明当前还有未访问到的页面，可以继续搜索</span>
+                <span class="token keyword">if</span><span class="token punctuation">(</span>clock<span class="token punctuation">.</span>buffer<span class="token punctuation">[</span>clock<span class="token punctuation">.</span>pointer<span class="token punctuation">]</span> <span class="token operator">==</span> string<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token comment">//如果搜索到指定页</span>
+                    hit <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>                                            <span class="token comment">//页命中</span>
+                    clock<span class="token punctuation">.</span>used<span class="token punctuation">[</span>clock<span class="token punctuation">.</span>pointer<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>                      <span class="token comment">//页被使用</span>
+                    clock<span class="token punctuation">.</span>pointer <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>                                  <span class="token comment">//时钟指针置零</span>
+
+                    circular_flag <span class="token operator">=</span> <span class="token function">clock_sum</span><span class="token punctuation">(</span>clock<span class="token punctuation">)</span><span class="token punctuation">;</span>   <span class="token comment">//更新循环标志</span>
+                    <span class="token keyword">break</span><span class="token punctuation">;</span>
+                <span class="token punctuation">&#125;</span> 
+                                                        <span class="token comment">//如果没有搜索到</span>
+                clock<span class="token punctuation">.</span>used<span class="token punctuation">[</span>clock<span class="token punctuation">.</span>pointer<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>                      <span class="token comment">//页未被使用</span>
+                clock<span class="token punctuation">.</span>pointer <span class="token operator">=</span> <span class="token punctuation">(</span>clock<span class="token punctuation">.</span>pointer <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">%</span> CLOCK_SIZE<span class="token punctuation">;</span>   <span class="token comment">//时钟指针向后拨动一位</span>
+
+                circular_flag <span class="token operator">=</span> <span class="token function">clock_sum</span><span class="token punctuation">(</span>clock<span class="token punctuation">)</span><span class="token punctuation">;</span>       <span class="token comment">//更新循环标志</span>
+            <span class="token punctuation">&#125;</span>
+
+            <span class="token keyword">if</span><span class="token punctuation">(</span>hit<span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span>  <span class="token comment">//如果命中就退出循环，否则说明缺页</span>
+
+            page_fault<span class="token operator">++</span><span class="token punctuation">;</span>
+
+            clock<span class="token punctuation">.</span>buffer<span class="token punctuation">[</span>clock<span class="token punctuation">.</span>pointer<span class="token punctuation">]</span> <span class="token operator">=</span> string<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token string">'0'</span><span class="token punctuation">;</span>      <span class="token comment">//填入当前指针指向页</span>
+            clock<span class="token punctuation">.</span>used<span class="token punctuation">[</span>clock<span class="token punctuation">.</span>pointer<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>                      <span class="token comment">//页被使用</span>
+            clock<span class="token punctuation">.</span>pointer <span class="token operator">=</span> <span class="token punctuation">(</span>clock<span class="token punctuation">.</span>pointer <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">%</span> CLOCK_SIZE<span class="token punctuation">;</span>   <span class="token comment">//时钟指针向后拨动一位</span>
+
+            circular_flag <span class="token operator">=</span> <span class="token function">clock_sum</span><span class="token punctuation">(</span>clock<span class="token punctuation">)</span><span class="token punctuation">;</span>           <span class="token comment">//更新循环标志</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token function">clock_print</span><span class="token punctuation">(</span>clock<span class="token punctuation">)</span><span class="token punctuation">;</span>   <span class="token comment">//每个页号（string[i]）到达后的结果</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Clock >> final result:\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">clock_print</span><span class="token punctuation">(</span>clock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Clock >> page faults = %d\n"</span><span class="token punctuation">,</span> page_fault<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></p>
+<p>算法中需要注意的是循环标志<code>circular_flag</code>，用于指示当前是否访问所有页：大于 0，说明有未被访问的页。</p>
+<script type="math/tex; mode=display">circularflag = \sum_{0 ≤ i ≤ clocksize} used[i]</script><p>算法过程如下：</p>
+<ul>
+<li>第一步，进行页查找，如果搜索到指定页，就将标志位 used[i]置位，说明页被使用，并将时针清零；否则，就将访问到的页置零，同时时针顺时针拨动。假如当前页中不存在指定页，就转到第二步</li>
+<li>第二步，说明页未被命中，将当前指针所指的页进行置换，并将 used[i] 置位，同时时针继续向后拨动</li>
+<li>第三步，循环第一、二步直至输入终止</li>
+</ul>
+<p>算法需要实时更新循环标志，防止时针逻辑出错。循环标志主要用来判断是否需要进行页置换，循环标志等于 0 的时候，说明此时时针已经遍历所有页，且未找到指定页，那么就需要将时针指向的页与指定页进行交换。</p>
+<p>测试用例：</p>
+<p><img src="https://pic.rmb.bdstatic.com/bjh/6342c4590d4ac9751e330cc24a9c23c9.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/6342c4590d4ac9751e330cc24a9c23c9.png" class="lozad post-image"></p>
+<p>测试结果：</p>
+<p><img src="https://pic.rmb.bdstatic.com/bjh/585913fb6541ad587ac1c1b996012826.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/585913fb6541ad587ac1c1b996012826.png" class="lozad post-image"><br><img src="https://pic.rmb.bdstatic.com/bjh/6bc0f39ca99285c5f54de8c12268ba0b.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/6bc0f39ca99285c5f54de8c12268ba0b.png" class="lozad post-image"></p>
+<h3 id="2-4-策略比较"><a href="#2-4-策略比较" class="headerlink" title="2.4 策略比较"></a>2.4 策略比较</h3><p>测试用例：</p>
+<p><img src="https://pic.rmb.bdstatic.com/bjh/da8c043409d1e21c9c76ecdffea97a59.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/da8c043409d1e21c9c76ecdffea97a59.png" class="lozad post-image"></p>
+<p>测试结果： </p>
+<p><img src="https://pic.rmb.bdstatic.com/bjh/0b93dc7bcc24849c6939f481a65fdb09.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/0b93dc7bcc24849c6939f481a65fdb09.png" class="lozad post-image"></p>
+]]></content>
+      <categories>
+        <category>Problems</category>
+      </categories>
+      <tags>
+        <tag>C</tag>
+        <tag>页置换</tag>
+      </tags>
+  </entry>
 </search>
