@@ -100,7 +100,7 @@ int nextDate(int month, int date, int year)
     <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
 <span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
       <categories>
-        <category>Problems</category>
+        <category>Program</category>
       </categories>
       <tags>
         <tag>C</tag>
@@ -213,7 +213,7 @@ int nextDate(int month, int date, int year)
 <p><img src="https://pic.rmb.bdstatic.com/bjh/d81012d5b3a1410aa29632ef960dee3d.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/d81012d5b3a1410aa29632ef960dee3d.png" class="lozad post-image"></p>
 ]]></content>
       <categories>
-        <category>Problems</category>
+        <category>Program</category>
       </categories>
       <tags>
         <tag>C</tag>
@@ -825,7 +825,7 @@ $ hexo d<span aria-hidden="true" class="line-numbers-rows"><span></span><span></
 <p><img src="https://pic.rmb.bdstatic.com/bjh/ab58d8676b51a0581f09a09fe84e3f5e.png" alt="1.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/ab58d8676b51a0581f09a09fe84e3f5e.png" class="lozad post-image"><br><img src="https://pic.rmb.bdstatic.com/bjh/7bb9766a99956d76122dcec4676b2c6c.png" alt="2.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/7bb9766a99956d76122dcec4676b2c6c.png" class="lozad post-image"></p>
 ]]></content>
       <categories>
-        <category>Problems</category>
+        <category>Program</category>
       </categories>
       <tags>
         <tag>C</tag>
@@ -1373,7 +1373,7 @@ BUFFER buffer<span class="token punctuation">[</span>BUFFER_SIZE<span class="tok
 <p><img src="https://pic.rmb.bdstatic.com/bjh/0b93dc7bcc24849c6939f481a65fdb09.png" alt="image.png" srcset="/img/loading.gif" data-src="https://pic.rmb.bdstatic.com/bjh/0b93dc7bcc24849c6939f481a65fdb09.png" class="lozad post-image"></p>
 ]]></content>
       <categories>
-        <category>Problems</category>
+        <category>Program</category>
       </categories>
       <tags>
         <tag>C</tag>
