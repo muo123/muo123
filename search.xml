@@ -828,6 +828,9 @@ $ hexo d<span aria-hidden="true" class="line-numbers-rows"><span></span><span></
       </categories>
       <tags>
         <tag>C</tag>
+        <tag>Peterson</tag>
+        <tag>CPU 调度</tag>
+        <tag>Pthread</tag>
       </tags>
   </entry>
 </search>
