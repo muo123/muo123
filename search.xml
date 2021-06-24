@@ -141,7 +141,7 @@ int nextDate(int month, int date, int year)
       </categories>
   </entry>
   <entry>
-    <title>使用DFS枚举格雷码</title>
+    <title>使用 DFS 枚举格雷码</title>
     <url>/2021/03/23/dfs&amp;gray/</url>
     <content><![CDATA[<h2 id="使用DFS枚举格雷码"><a href="#使用DFS枚举格雷码" class="headerlink" title="使用DFS枚举格雷码"></a>使用DFS枚举格雷码</h2><p><font color="red">问题</font>：给定正整数$n$，需要输出$2^n$个$n$位01串，且相邻01串之间只允许有一位不相同。<br>$n=2$时的结果：00，01，11，10<br>$n=3$时的结果：000，001，011，010，110，111，101，100    </p>
 <p><font color="red">思路</font>：由题目描述，可以联想到格雷码，相邻字符串只有1位不同。等长01串，使用二叉树结构储存，通过特定的排列，使得根节点到叶子节点的路径上刚好是所需要的01串,最后通过对二叉树遍历，输出所有可能的结果。每次遍历都需要从根节点到叶子节点，同时记录路径上的01值，可以使用DFS(深度优先搜索)进行遍历。</p>
@@ -217,6 +217,7 @@ int nextDate(int month, int date, int year)
       </categories>
       <tags>
         <tag>C</tag>
+        <tag>DFS</tag>
       </tags>
   </entry>
   <entry>
